@@ -13,8 +13,24 @@ interface OrderRepository : JpaRepository<Order, UUID> {
             JOIN o.orderItems oi
             WHERE oi.sellerId = :sellerId
                 AND oi.status = 'PAID_PENDING_SHIPMENT'
-            ORDER BY oi.paidAt ASC
+            ORDER BY o.createdAt ASC
         """,
     )
     fun findUnfinishedOrdersFromSeller(sellerId: UUID): List<Order>
+
+    @Query(
+        """
+            SELECT o FROM Order o
+            JOIN o.orderItems oi
+            WHERE oi.sellerId = :sellerId
+                AND NOT EXISTS (
+                    SELECT 1 FROM OrderItem oi2
+                    WHERE oi2.order = o
+                        AND oi2.sellerId = :sellerId
+                        AND oi2.status = 'PAID_PENDING_SHIPMENT'
+                )
+            ORDER BY o.createdAt DESC
+        """,
+    )
+    fun findFinishedOrdersFromSeller(sellerId: UUID): List<Order>
 }

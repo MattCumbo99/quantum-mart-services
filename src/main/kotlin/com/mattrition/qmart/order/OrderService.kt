@@ -22,8 +22,14 @@ class OrderService(
     private val cartItemService: CartItemService,
     private val balanceService: BalanceService,
 ) {
+    /** Retrieves all orders bought by a specified user. */
     fun getOrdersBoughtBy(buyerId: UUID): List<OrderDto> = orderRepository.findOrdersByBuyerId(buyerId).map { OrderMapper.toDto(it) }
 
+    /**
+     * Retrieves all orders bought by a user via username.
+     *
+     * @throws NotFoundException If the username does not exist.
+     */
     fun getOrdersBoughtBy(username: String): List<OrderDto> {
         val user =
             userRepository.findByUsernameIgnoreCase(username)
@@ -32,9 +38,23 @@ class OrderService(
         return getOrdersBoughtBy(user.id!!)
     }
 
-    fun getUnfinishedOrdersForSeller(sellerId: UUID): List<OrderDto> {
+    /**
+     * Retrieves all orders with only order items associated by the seller.
+     *
+     * @param unfinished If the query should only return orders where at least 1 item from the
+     *   seller is
+     *   [PAID_PENDING_SHIPMENT][com.mattrition.qmart.orderitem.OrderItemStatus.PAID_PENDING_SHIPMENT].
+     */
+    fun getOrdersForSeller(
+        sellerId: UUID,
+        unfinished: Boolean,
+    ): List<OrderDto> {
         val orders =
-            orderRepository.findUnfinishedOrdersFromSeller(sellerId).map { order ->
+            if (unfinished) {
+                orderRepository.findUnfinishedOrdersFromSeller(sellerId)
+            } else {
+                orderRepository.findFinishedOrdersFromSeller(sellerId)
+            }.map { order ->
                 val sellerItems =
                     orderItemRepository.findByOrderIdAndSellerId(order.id!!, sellerId).map {
                         OrderItemMapper.toDto(it)

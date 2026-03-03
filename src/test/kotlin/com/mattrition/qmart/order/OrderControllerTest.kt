@@ -32,7 +32,7 @@ class OrderControllerTest : BaseH2Test() {
         private fun orderWithAddress(
             buyerId: UUID,
             totalPaid: BigDecimal = BigDecimal.ZERO,
-            orderItems: List<OrderItemDto> = emptyList()
+            orderItems: List<OrderItemDto> = emptyList(),
         ) = OrderDto(
             buyerId = buyerId,
             status = OrderStatus.PENDING,

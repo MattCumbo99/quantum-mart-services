@@ -17,6 +17,6 @@ class OrderItemController(
     @PatchMapping("/{id}")
     fun updateStatus(
         @PathVariable id: UUID,
-        @RequestBody request: UpdateOrderItemRequest
+        @RequestBody request: UpdateOrderItemRequest,
     ): OrderItemDto = orderItemService.updateOrderItem(id, request)
 }
