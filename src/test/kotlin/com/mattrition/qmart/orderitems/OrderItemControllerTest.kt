@@ -85,11 +85,6 @@ class OrderItemControllerTest : BaseH2Test() {
 
         @Test
         fun `should set shipping date and status`() {
-            fun orderItem() =
-                orderItemRepository
-                    .findById(order.orderItems.first().id!!)
-                    .getOrNull()
-                    .shouldNotBeNull()
             orderItem().status shouldBe OrderItemStatus.PAID_PENDING_SHIPMENT
             orderItem().shippedOn.shouldBeNull()
 
@@ -102,5 +97,64 @@ class OrderItemControllerTest : BaseH2Test() {
             orderItem().shippedOn.shouldNotBeNull() shouldBeLessThanOrEqualTo OffsetDateTime.now()
             orderItem().status shouldBe OrderItemStatus.SHIPPED
         }
+
+        @Test
+        fun `canceling order item should not set shipped on date`() {
+            orderItem().status shouldBe OrderItemStatus.PAID_PENDING_SHIPMENT
+            orderItem().shippedOn.shouldBeNull()
+
+            mockRequest(
+                requestType = PATCH,
+                path = "$BASE_PATH/${orderItem().id!!}?newStatus=${OrderItemStatus.CANCELLED}",
+                token = TestTokens.moderator,
+            ).andExpect(status().isOk)
+
+            orderItem().status shouldBe OrderItemStatus.CANCELLED
+            orderItem().shippedOn.shouldBeNull()
+        }
+
+        @Test
+        fun `seller changing status from modified status should return 403 forbidden`() {
+            for (currentStatus in OrderItemStatus.entries) {
+                if (currentStatus != OrderItemStatus.PAID_PENDING_SHIPMENT) {
+                    orderItem().status = currentStatus
+
+                    for (newStatus in OrderItemStatus.entries) {
+                        mockRequest(
+                            requestType = PATCH,
+                            path = "$BASE_PATH/${orderItem().id!!}?newStatus=$newStatus",
+                            token = TestTokens.moderator,
+                        ).andExpect(status().isForbidden)
+
+                        orderItem().status shouldBe currentStatus
+                    }
+                }
+            }
+        }
+
+        @Test
+        fun `seller changing status to restricted value should return 403 forbidden`() {
+            val allowed = listOf(OrderItemStatus.SHIPPED, OrderItemStatus.CANCELLED)
+            orderItem().status = OrderItemStatus.PAID_PENDING_SHIPMENT
+
+            for (newStatus in OrderItemStatus.entries) {
+                if (newStatus !in allowed) {
+                    mockRequest(
+                        requestType = PATCH,
+                        path = "$BASE_PATH/${orderItem().id!!}?newStatus=$newStatus",
+                        token = TestTokens.moderator,
+                    ).andExpect(status().isForbidden)
+
+                    orderItem().status shouldBe OrderItemStatus.PAID_PENDING_SHIPMENT
+                    orderItem().shippedOn.shouldBeNull()
+                }
+            }
+        }
+
+        private fun orderItem() =
+            orderItemRepository
+                .findById(order.orderItems.first().id!!)
+                .getOrNull()
+                .shouldNotBeNull()
     }
 }

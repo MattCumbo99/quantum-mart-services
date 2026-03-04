@@ -31,18 +31,41 @@ class OrderItemService(
                 throw NotFoundException("Order item with id $orderItemId does not exist.")
             }
 
-        val auth = SecurityContextHolder.getContext().authentication
-        val principal = auth?.principal as CustomUserDetails
-
-        if (orderItem.sellerId != principal.id) {
-            throw ForbiddenException("User not authorized.")
-        }
+        ensureAuthUserIsSeller(orderItem.sellerId!!)
+        ensureStatusCanChange(orderItem.status)
+        ensureNewStatusIsAllowed(newStatus)
 
         if (newStatus == OrderItemStatus.SHIPPED) {
-            orderItem.status = newStatus
             orderItem.shippedOn = OffsetDateTime.now()
         }
 
+        orderItem.status = newStatus
+
         return OrderItemMapper.toDto(orderItem)
+    }
+
+    private fun ensureStatusCanChange(currentStatus: OrderItemStatus) {
+        if (currentStatus != OrderItemStatus.PAID_PENDING_SHIPMENT) {
+            throw ForbiddenException("Cannot update item status (already modified).")
+        }
+    }
+
+    private fun ensureNewStatusIsAllowed(newStatus: OrderItemStatus) {
+        if (newStatus !in ALLOWED_STATUSES) {
+            throw ForbiddenException("New status must be allowed.")
+        }
+    }
+
+    private fun ensureAuthUserIsSeller(sellerId: UUID) {
+        val auth = SecurityContextHolder.getContext().authentication
+        val principal = auth?.principal as CustomUserDetails
+
+        if (sellerId != principal.id) {
+            throw ForbiddenException("User not authorized.")
+        }
+    }
+
+    companion object {
+        private val ALLOWED_STATUSES = listOf(OrderItemStatus.SHIPPED, OrderItemStatus.CANCELLED)
     }
 }
