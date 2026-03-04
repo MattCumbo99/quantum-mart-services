@@ -6,7 +6,6 @@ import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -19,32 +18,14 @@ class ItemListingControllerTest : BaseH2Test() {
         const val BASE_PATH = "/api/item-listings"
     }
 
-    @Autowired lateinit var itemListingRepository: ItemListingRepository
-
     private lateinit var listing1: ItemListing
     private lateinit var listing2: ItemListing
 
     @BeforeEach
     fun initializeListings() {
-        listing1 =
-            itemListingRepository.save(
-                ItemListing(
-                    sellerId = TestUsers.moderator.id,
-                    title = "Test Listing 1",
-                    description = "Test listing.",
-                    price = BigDecimal.valueOf(100),
-                ),
-            )
-
-        listing2 =
-            itemListingRepository.save(
-                ItemListing(
-                    sellerId = TestUsers.admin.id,
-                    title = "Test Listing 2",
-                    description = "Test listing, but admin.",
-                    price = BigDecimal.valueOf(250),
-                ),
-            )
+        val listings = super.initListings()
+        listing1 = listings.first()
+        listing2 = listings.last()
     }
 
     @Nested

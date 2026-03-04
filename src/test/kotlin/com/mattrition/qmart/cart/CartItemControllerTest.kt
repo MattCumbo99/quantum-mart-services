@@ -2,7 +2,6 @@ package com.mattrition.qmart.cart
 
 import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.itemlisting.ItemListing
-import com.mattrition.qmart.itemlisting.ItemListingRepository
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.toDto
 import io.kotest.matchers.equals.shouldBeEqual
@@ -10,7 +9,6 @@ import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -20,15 +18,12 @@ import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.math.BigDecimal
 import kotlin.jvm.optionals.getOrNull
 
 class CartItemControllerTest : BaseH2Test() {
     companion object {
         const val BASE_PATH = "/api/cart-items"
     }
-
-    @Autowired lateinit var itemListingRepository: ItemListingRepository
 
     @Autowired lateinit var cartItemRepository: CartItemRepository
 
@@ -37,36 +32,18 @@ class CartItemControllerTest : BaseH2Test() {
     private lateinit var listing2: ItemListing
     private lateinit var listing2Dto: ItemListingDto
 
-    @BeforeAll
-    fun initializeListings() {
-        listing1 =
-            itemListingRepository.save(
-                ItemListing(
-                    sellerId = TestUsers.admin.id,
-                    title = "Listing 1",
-                    description = "Test listing",
-                    price = BigDecimal(10.0),
-                ),
-            )
-        listing1Dto = listing1.toDto(TestUsers.admin.username)
-
-        listing2 =
-            itemListingRepository.save(
-                ItemListing(
-                    sellerId = TestUsers.moderator.id,
-                    title = "Listing 2",
-                    description = "Test listing",
-                    price = BigDecimal(25.0),
-                ),
-            )
-        listing2Dto = listing2.toDto(TestUsers.moderator.username)
-    }
-
     private lateinit var cartItem1: CartItem
     private lateinit var cartItem2: CartItem
 
     @BeforeEach
     fun addCartItems() {
+        val listings = super.initListings()
+        listing1 = listings.last()
+        listing1Dto = listing1.toDto(TestUsers.admin.username)
+
+        listing2 = listings.first()
+        listing2Dto = listing2.toDto(TestUsers.moderator.username)
+
         val item1 = CartItem(userId = TestUsers.user.id, listingId = listing1.id, quantity = 1)
 
         val item2 = CartItem(userId = TestUsers.user.id, listingId = listing2.id, quantity = 1)

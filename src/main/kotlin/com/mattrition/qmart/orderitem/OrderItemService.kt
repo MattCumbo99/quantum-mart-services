@@ -4,7 +4,6 @@ import com.mattrition.qmart.auth.CustomUserDetails
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.orderitem.dto.OrderItemDto
-import com.mattrition.qmart.orderitem.dto.UpdateOrderItemRequest
 import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
 import jakarta.transaction.Transactional
 import org.springframework.security.core.context.SecurityContextHolder
@@ -17,15 +16,15 @@ class OrderItemService(
     private val orderItemRepository: OrderItemRepository,
 ) {
     /**
-     * Patches an order item.
+     * Patches an order item's status field.
      *
      * @throws NotFoundException If the order item does not exist.
      * @throws ForbiddenException If the authentication ID does not match the seller ID.
      */
     @Transactional
-    fun updateOrderItem(
+    fun updateOrderItemStatus(
         orderItemId: UUID,
-        updates: UpdateOrderItemRequest,
+        newStatus: OrderItemStatus,
     ): OrderItemDto {
         val orderItem =
             orderItemRepository.findById(orderItemId).orElseThrow {
@@ -39,8 +38,8 @@ class OrderItemService(
             throw ForbiddenException("User not authorized.")
         }
 
-        if (updates.status != null && updates.status == OrderItemStatus.SHIPPED) {
-            orderItem.status = updates.status
+        if (newStatus == OrderItemStatus.SHIPPED) {
+            orderItem.status = newStatus
             orderItem.shippedOn = OffsetDateTime.now()
         }
 
