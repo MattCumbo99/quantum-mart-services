@@ -19,8 +19,8 @@
 
 | Column Name        | Datatype        | Nullable  | Default             | Description                                    |
 |--------------------|-----------------|-----------|---------------------|------------------------------------------------|
+| id                 | PK `UUID`       | No        | `gen_random_uuid()` | Identifier for the order.                      |
 | buyer_id           | FK `UUID`       | No        |                     | User ID of the user who made the order.        |
-| order_id           | PK `UUID`       | No        | `gen_random_uuid()` | Identifier for the order.                      |
 | status             | `VARCHAR(50)`   | No        | pending             | Status of the order.                           |
 | total_paid         | `NUMERIC(10,2)` | No        |                     | How much the buyer paid in total.              |
 | created_at         | `TIMESTAMP`     | No        | `now()`             | When the order was made.                       |
