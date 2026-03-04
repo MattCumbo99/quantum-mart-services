@@ -59,11 +59,12 @@ Entities are permanent to preserve financial history.
     - _**COMPLETED**_ - Item was delivered to the shipping address on the order.
     - _**CANCELLED**_ - The seller declines to fulfill the contract and cancels the transaction.
     - _**REFUNDED**_ - Manually set by Quantum Mart employees due to a conflict in the transaction.
-2. `listing_price` must be greater than or equal to 0.
-3. `quantity` must be greater than 0.
+2. `status` can only be modified by the original seller and when the status is _**PAID_PENDING_SHIPMENT**_.
+3. `listing_price` must be greater than or equal to 0.
+4. `quantity` must be greater than 0.
 
 ## 🔍Access Patterns
-- Fetch order items by seller where no items OR at least 1 item has a status of _**PAID_PENDING_SHIPMENT**_.
+- Fetch order items by seller where either no items OR at least 1 item has a status of _**PAID_PENDING_SHIPMENT**_.
 - Fetch order items by order ID.
 
 ## ⚙️Operational Notes

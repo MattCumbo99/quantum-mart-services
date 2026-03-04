@@ -2,6 +2,8 @@
 
 ----
 
+![img.png](img.png)
+
 ## Domain Summary
 The tables for Quantum Mart are meant to function as a way to simulate a shopping website. Users can sell and purchase items 
 listed based on the information stored.
