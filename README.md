@@ -7,8 +7,7 @@
 </p>
 
 <p align="center">
-    A Spring Boot API service that powers the core features of Quantum Mart. Including users, orders, and product 
-    listings.
+    A Spring Boot API service that powers the core features of Quantum Mart.
 </p>
 
 ## Table of Contents
