@@ -10,6 +10,6 @@ data class UserDto(
     val username: String,
     val email: String?,
     val createdAt: LocalDateTime,
-    val coinBalance: BigDecimal = BigDecimal.ZERO,
+    val balance: BigDecimal = BigDecimal.ZERO,
     val role: String = UserRole.USER.lowercase(),
 )
