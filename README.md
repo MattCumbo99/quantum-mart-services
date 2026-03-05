@@ -10,6 +10,10 @@
     A Spring Boot API service that powers the core features of Quantum Mart.
 </p>
 
+<p align="center">
+    <img src="https://img.shields.io/badge/status-in_development-blue" />
+</p>
+
 ## Table of Contents
 - [Architecture Summary](#architecture-summary)
 - [API Overview](#api-overview)
