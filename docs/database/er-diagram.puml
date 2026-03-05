@@ -1,0 +1,21 @@
+@startuml
+skinparam horizontalSpacing 100
+skinparam verticalSpacing 100
+hide empty members
+
+class User <<table>>
+class ItemListing <<table>>
+class Order <<table>>
+class OrderItem <<table>>
+class CartItem <<table>>
+
+User "0..*" -up-> CartItem
+
+User "0..*" -right-> Order
+
+CartItem "1" -left-> ItemListing
+ItemListing "0..*" -> User
+
+Order "1..*" -right-> OrderItem
+
+@enduml
