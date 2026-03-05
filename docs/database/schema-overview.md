@@ -1,6 +1,5 @@
 # Quantum Mart Database Overview
 
-----
 
 ![img.png](img.png)
 
