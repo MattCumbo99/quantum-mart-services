@@ -1,15 +1,9 @@
 <h1 align="center">Quantum Mart Backend API</h1>
 
 <p align="center">
-    <a href="https://spring.io/" style="text-decoration: none">
-        <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot"/>
-    </a>
-    <a href="https://kotlinlang.org/" style="text-decoration: none">
-        <img src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin"/>
-    </a>
-    <a href="https://www.postgresql.org/" style="text-decoration: none">
-        <img src="https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
-    </a>
+    <img src="https://img.shields.io/badge/Spring%20Boot-6DB33F?logo=springboot&logoColor=white" alt="Spring Boot"/>
+    <img src="https://img.shields.io/badge/Kotlin-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin"/>
+    <img src="https://img.shields.io/badge/PostgreSQL-336791?logo=postgresql&logoColor=white" alt="PostgreSQL"/>
 </p>
 
 <p align="center">
