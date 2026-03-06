@@ -105,11 +105,11 @@ class OrderItemControllerTest : BaseH2Test() {
 
             mockRequest(
                 requestType = PATCH,
-                path = "$BASE_PATH/${orderItem().id!!}?newStatus=${OrderItemStatus.CANCELLED}",
+                path = "$BASE_PATH/${orderItem().id!!}?newStatus=${OrderItemStatus.CANCELED}",
                 token = TestTokens.moderator,
             ).andExpect(status().isOk)
 
-            orderItem().status shouldBe OrderItemStatus.CANCELLED
+            orderItem().status shouldBe OrderItemStatus.CANCELED
             orderItem().shippedOn.shouldBeNull()
         }
 
@@ -134,7 +134,7 @@ class OrderItemControllerTest : BaseH2Test() {
 
         @Test
         fun `seller changing status to restricted value should return 403 forbidden`() {
-            val allowed = listOf(OrderItemStatus.SHIPPED, OrderItemStatus.CANCELLED)
+            val allowed = listOf(OrderItemStatus.SHIPPED, OrderItemStatus.CANCELED)
             orderItem().status = OrderItemStatus.PAID_PENDING_SHIPMENT
 
             for (newStatus in OrderItemStatus.entries) {

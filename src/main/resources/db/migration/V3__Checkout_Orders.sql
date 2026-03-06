@@ -55,7 +55,7 @@ ALTER TABLE order_items
 			'PAID_PENDING_SHIPMENT',
 			'SHIPPED',
 			'COMPLETED',
-			'CANCELLED',
+			'CANCELED',
 			'REFUNDED'
 		));
 		

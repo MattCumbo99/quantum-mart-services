@@ -38,7 +38,7 @@ Keeps track of individual items bought within an order.
 When an order is created, all items from the user's **cart** will be added as order item entities.
 
 ### 🔄Row Updates
-- `status` changes when the seller manually sets the item as either _SHIPPED_ or _CANCELLED_.
+- `status` changes when the seller manually sets the item as either _SHIPPED_ or _CANCELED_.
 - `shipped_on` receives a value when the **status** field changes to _SHIPPED_ for the first time.
 
 ### 🗑️Row Deletion
@@ -56,7 +56,7 @@ Entities are permanent to preserve financial history.
     - _**PAID_PENDING_SHIPMENT**_ - Item was purchased and is waiting for the seller to update the status.
     - _**SHIPPED**_ - Item was packaged and shipped to the address specified on the order.
     - _**COMPLETED**_ - Item was delivered to the shipping address on the order.
-    - _**CANCELLED**_ - The seller declines to fulfill the contract and cancels the transaction.
+    - _**CANCELED**_ - The seller declines to fulfill the contract and cancels the transaction.
     - _**REFUNDED**_ - Manually set by Quantum Mart employees due to a conflict in the transaction.
 2. `status` can only be modified by the original seller and when the status is _**PAID_PENDING_SHIPMENT**_.
 3. `listing_price` must be greater than or equal to 0.
