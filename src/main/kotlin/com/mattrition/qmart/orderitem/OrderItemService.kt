@@ -66,6 +66,6 @@ class OrderItemService(
     }
 
     companion object {
-        private val ALLOWED_STATUSES = listOf(OrderItemStatus.SHIPPED, OrderItemStatus.CANCELLED)
+        private val ALLOWED_STATUSES = listOf(OrderItemStatus.SHIPPED, OrderItemStatus.CANCELED)
     }
 }
