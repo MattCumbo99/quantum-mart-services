@@ -11,12 +11,12 @@ on:
         required: true
         type: choice
         options:
-          - major
           - minor
           - patch
 
 jobs:
   release:
+    name: Create new ${{ github.event.inputs.bump }} release
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -35,11 +35,6 @@ jobs:
           minor=$(echo "$currVersion" | cut -d. -f2)
           patch=$(echo "$currVersion" | cut -d. -f3)
           case "${{ github.event.inputs.bump }}" in
-            major)
-              major=$((major + 1))
-              minor=0
-              patch=0
-              ;;
             minor)
               minor=$((minor + 1))
               patch=0
@@ -59,22 +54,15 @@ jobs:
           else
             echo "prerelease=false" >> $GITHUB_OUTPUT
           fi
-      - name: Create tag
+      - name: Build asset
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git tag v${{ steps.newTag.outputs.version }}
-          git push origin v${{ steps.newTag.outputs.version }}
-      - run: chmod +x ./gradlew
-      - run: ./gradlew clean build -Pversion=${{ steps.newTag.outputs.version }}
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.newTag.outputs.version }}
-          name: v${{ steps.newTag.outputs.version }}
-          generate_release_notes: true
-          prerelease: ${{ steps.newTag.outputs.prerelease }}
-          files: |
+          chmod +x ./gradlew
+          ./gradlew clean build -Pversion=${{ steps.newTag.outputs.version }}
+      - name: Upload new release
+        run: |
+          gh release create v${{ steps.newTag.outputs.version }} \
+            --generate-notes \
+            --prerelease=${{ steps.newTag.outputs.prerelease }} \
             build/libs/qmart-${{ steps.newTag.outputs.version }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

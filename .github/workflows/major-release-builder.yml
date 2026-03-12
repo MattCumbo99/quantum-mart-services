@@ -1,0 +1,39 @@
+name: Create Major Release
+
+permissions:
+  contents: write
+
+on: workflow_dispatch
+
+jobs:
+  release:
+    name: Publish new major release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 22
+      - name: Generate version name
+        id: newVersion
+        run: |
+          git fetch --tags
+          latest=$(git tag --sort=version:refname | tail -n 1)
+          currVersion="${latest#v}"
+          currVersion="${currVersion%%-*}"
+          major=$(echo "$currVersion" | cut -d. -f1)
+          major=$((major + 1))
+          newVersion="${major}.0.0"
+          echo "version=$newVersion" >> $GITHUB_OUTPUT
+      - name: Build asset
+        run: |
+          chmod +x ./gradlew
+          ./gradlew clean build -Pversion=${{ steps.newVersion.outputs.version }}
+      - name: Create major release v${{ steps.newVersion.outputs.version }}
+        run: |
+          gh release create v${{ steps.newVersion.outputs.version }} \
+            --generate-notes \
+            build/libs/qmart-${{ steps.newVersion.outputs.version }}.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
