@@ -11,7 +11,7 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
@@ -25,7 +25,7 @@ data class Order(
     val status: String = OrderStatus.PENDING,
     @Column(name = "total_paid", nullable = false) val totalPaid: BigDecimal = BigDecimal.ZERO,
     @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(),
     @Column(name = "shipping_firstname", nullable = false) val shippingFirstname: String = "",
     @Column(name = "shipping_lastname", nullable = false) val shippingLastname: String = "",
     @Column(name = "shipping_address1", nullable = false) val shippingAddress1: String = "",

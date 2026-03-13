@@ -2,7 +2,7 @@ package com.mattrition.qmart.order.dto
 
 import com.mattrition.qmart.orderitem.dto.OrderItemDto
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 data class OrderDto(
@@ -10,7 +10,7 @@ data class OrderDto(
     val buyerId: UUID,
     val status: String,
     val totalPaid: BigDecimal,
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(),
     val shippingFirstname: String,
     val shippingLastname: String,
     val shippingAddress1: String,

@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -31,7 +31,7 @@ data class User(
     @Column(nullable = false) val username: String = "",
     @Column(name = "password_hash", nullable = false) val passwordHash: String = "",
     @Column(name = "created_at", nullable = false)
-    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val createdAt: OffsetDateTime = OffsetDateTime.now(),
     val email: String? = null,
     @Column(nullable = false) var balance: BigDecimal = BigDecimal(1000),
     @Column(nullable = false) val role: String = UserRole.USER.lowercase(),

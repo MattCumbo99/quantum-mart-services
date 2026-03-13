@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
 import java.math.BigDecimal
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
@@ -19,6 +19,6 @@ data class ItemListing(
     val description: String = "",
     val price: BigDecimal = BigDecimal.ZERO,
     @Column(name = "image_url") val imageUrl: String? = null,
-    @Column(name = "created_at") val createdAt: LocalDateTime = LocalDateTime.now(),
-    @Column(name = "updated_at") val updatedAt: LocalDateTime = LocalDateTime.now(),
+    @Column(name = "created_at") val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    @Column(name = "updated_at") val updatedAt: OffsetDateTime = OffsetDateTime.now(),
 )

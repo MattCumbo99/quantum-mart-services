@@ -1,0 +1,15 @@
+ALTER TABLE users
+    ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE
+        USING created_at AT TIME ZONE 'UTC';
+
+ALTER TABLE orders
+    ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE
+        USING created_at AT TIME ZONE 'UTC';
+
+ALTER TABLE item_listings
+    ALTER COLUMN created_at TYPE TIMESTAMP WITH TIME ZONE
+        USING created_at AT TIME ZONE 'UTC';
+
+ALTER TABLE item_listings
+    ALTER COLUMN updated_at TYPE TIMESTAMP WITH TIME ZONE
+        USING updated_at AT TIME ZONE 'UTC';
