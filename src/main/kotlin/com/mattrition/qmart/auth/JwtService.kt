@@ -34,9 +34,9 @@ class JwtService(
 
         return Jwts
             .builder()
-            .setSubject(username)
-            .setIssuedAt(now)
-            .setExpiration(expiry)
+            .subject(username)
+            .issuedAt(now)
+            .expiration(expiry)
             .claim("uid", id)
             .claim("role", role)
             .signWith(key)
@@ -68,9 +68,9 @@ class JwtService(
 
     private fun extractAllClaims(token: String): Claims =
         Jwts
-            .parserBuilder()
-            .setSigningKey(key)
+            .parser()
+            .verifyWith(key)
             .build()
-            .parseClaimsJws(token)
-            .body
+            .parseSignedClaims(token)
+            .payload
 }
