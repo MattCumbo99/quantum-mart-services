@@ -37,7 +37,7 @@ jobs:
         run: |
           gh release create v${{ steps.newVersion.outputs.version }} \
             --generate-notes \
-            build/libs/qmart-${{ steps.newVersion.outputs.version }}.jar
+            build/libs/quantum-mart-services-${{ steps.newVersion.outputs.version }}.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

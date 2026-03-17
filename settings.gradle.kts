@@ -1,1 +1,1 @@
-rootProject.name = "qmart"
+rootProject.name = "quantum-mart-services"
