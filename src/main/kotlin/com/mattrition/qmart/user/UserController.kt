@@ -24,7 +24,7 @@ class UserController(
     @GetMapping
     fun getUsers(): List<UserDto> = service.getAllUsers()
 
-    @GetMapping("/username={username}")
+    @GetMapping("/username/{username}")
     fun getUserByUsername(
         @PathVariable username: String,
     ): UserDto = service.getUserByUsername(username)
