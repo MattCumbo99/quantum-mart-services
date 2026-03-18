@@ -47,21 +47,21 @@ class UserControllerTest : BaseH2Test() {
     inner class GetUserByUsername {
         @Test
         fun `should retrieve admin by username`() {
-            mockRequest(GET, "$BASE_PATH/username=aDMin")
+            mockRequest(GET, "$BASE_PATH/username/aDMin")
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.username").value("Admin"))
         }
 
         @Test
         fun `should retrieve user by username`() {
-            mockRequest(GET, "$BASE_PATH/username=test_user123")
+            mockRequest(GET, "$BASE_PATH/username/test_user123")
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.username").value("test_user123"))
         }
 
         @Test
         fun `should return 404 not found`() {
-            mockRequest(GET, "$BASE_PATH/username=phantomUser210401").andExpect(status().isNotFound)
+            mockRequest(GET, "$BASE_PATH/username/phantomUser210401").andExpect(status().isNotFound)
         }
 
         @Test

@@ -80,14 +80,14 @@ class ItemListingControllerTest : BaseH2Test() {
         fun `should get items by username`() {
             mockRequest(
                 requestType = GET,
-                path = "$BASE_PATH/seller=${TestUsers.moderator.username}",
+                path = "$BASE_PATH/seller/${TestUsers.moderator.username}",
             ).andExpect(status().isOk)
                 .andExpect(jsonPath("$[0].sellerUsername").value(TestUsers.moderator.username))
         }
 
         @Test
         fun `should return 404 not found on non-existing user`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/seller=${UUID.randomUUID()}")
+            mockRequest(requestType = GET, path = "$BASE_PATH/seller/${UUID.randomUUID()}")
                 .andExpect(status().isNotFound)
         }
 

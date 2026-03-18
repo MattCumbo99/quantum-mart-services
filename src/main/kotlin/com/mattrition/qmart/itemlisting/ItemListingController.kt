@@ -21,7 +21,7 @@ class ItemListingController(
 ) {
     @GetMapping fun getItemListings(): List<ItemListingDto> = service.getAllListings()
 
-    @GetMapping("/seller={sellerUsername}")
+    @GetMapping("/seller/{sellerUsername}")
     fun getItemListingsByUsername(
         @PathVariable sellerUsername: String,
     ): List<ItemListingDto> = service.getListingsByUsername(sellerUsername)
