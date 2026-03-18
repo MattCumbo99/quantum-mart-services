@@ -34,6 +34,19 @@ before it is allowed to execute, and some require a certain level of privilege b
 - `/api/order-items` - Itemized purchases in an order
 - `/api/cart-items` - User cart
 
+## Getting Started
+You need Java and a locally running [PostgreSQL](https://www.postgresql.org/) database. The application will not start without it.
+
+1. [Download](https://github.com/MattCumbo99/quantum-mart-services/releases) the latest release build.
+2. Set the following environment variables:
+   ```
+   DB_URL=<db url> (ex: jdbc:postgresql://localhost:5432/qmartdb)
+   DB_USERNAME=<db username> (ex: postgres)
+   DB_PASSWORD=<db password> (ex: admin)
+   SPRING_PROFILES_ACTIVE=dev
+    ```
+3. Run the jar file.
+
 ## Developer Setup
 Before installation, ensure you have [PostgreSQL](https://www.postgresql.org/download/) downloaded on your machine. It is recommended you install [pgadmin](https://www.pgadmin.org/download/) 
 to manage the local database.
