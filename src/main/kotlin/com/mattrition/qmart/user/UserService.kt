@@ -42,7 +42,8 @@ class UserService(
      * @throws NotFoundException If there is no user with the provided ID.
      */
     fun getUserById(id: UUID): UserDto {
-        val user = repo.findById(id).orElseThrow { NotFoundException("User with id $id not found.") }
+        val user =
+            repo.findById(id).orElseThrow { NotFoundException("User with id $id not found.") }
 
         return UserMapper.toDto(user)
     }
@@ -56,8 +57,9 @@ class UserService(
      * @throws NotFoundException If a user with the username does not exist.
      */
     fun getUserByUsername(username: String): UserDto {
-        val user = repo.findByUsernameIgnoreCase(username)
-            ?: throw NotFoundException("User $username does not exist.")
+        val user =
+            repo.findByUsernameIgnoreCase(username)
+                ?: throw NotFoundException("User $username does not exist.")
 
         return UserMapper.toDto(user)
     }

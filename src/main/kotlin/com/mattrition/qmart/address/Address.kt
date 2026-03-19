@@ -25,5 +25,6 @@ data class Address(
     @Column(nullable = false) var city: String,
     @Column(nullable = false) var state: String,
     @Column(nullable = false) var zip: String,
-    @Column(name = "created_at", nullable = false) val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    @Column(name = "created_at", nullable = false)
+    val createdAt: OffsetDateTime = OffsetDateTime.now(),
 )
