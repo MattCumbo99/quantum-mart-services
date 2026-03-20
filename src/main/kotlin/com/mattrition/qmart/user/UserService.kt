@@ -4,6 +4,7 @@ import com.mattrition.qmart.exception.ConflictException
 import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.user.dto.RegistrationInfo
 import com.mattrition.qmart.user.dto.UserDto
+import com.mattrition.qmart.user.mapper.UserMapper
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import java.util.UUID
@@ -32,7 +33,7 @@ class UserService(
                 ),
             )
 
-        return userEntity.toDto()
+        return UserMapper.toDto(userEntity)
     }
 
     /**
@@ -40,28 +41,26 @@ class UserService(
      *
      * @throws NotFoundException If there is no user with the provided ID.
      */
-    fun getUserById(id: UUID): UserDto = repo.findById(id).orElseThrow { NotFoundException("User with id $id not found.") }.toDto()
+    fun getUserById(id: UUID): UserDto {
+        val user =
+            repo.findById(id).orElseThrow { NotFoundException("User with id $id not found.") }
+
+        return UserMapper.toDto(user)
+    }
 
     /** Retrieves a list containing every user in the database. */
-    fun getAllUsers(): List<UserDto> = repo.findAll().map { it.toDto() }
+    fun getAllUsers(): List<UserDto> = repo.findAll().map { UserMapper.toDto(it) }
 
     /**
      * Retrieves a user that matches against [username]. Casing is ignored.
      *
      * @throws NotFoundException If a user with the username does not exist.
      */
-    fun getUserByUsername(username: String): UserDto =
-        repo.findByUsernameIgnoreCase(username)?.toDto()
-            ?: throw NotFoundException("User $username does not exist.")
+    fun getUserByUsername(username: String): UserDto {
+        val user =
+            repo.findByUsernameIgnoreCase(username)
+                ?: throw NotFoundException("User $username does not exist.")
 
-    /** Converts a [User] object to a Data Transfer Object (no password). */
-    fun User.toDto(): UserDto =
-        UserDto(
-            id = this.id!!,
-            username = this.username,
-            email = this.email,
-            createdAt = this.createdAt,
-            balance = this.balance,
-            role = this.role,
-        )
+        return UserMapper.toDto(user)
+    }
 }

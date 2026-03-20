@@ -157,9 +157,8 @@ abstract class BaseH2Test {
      *
      * @param requestType Method type of the controller.
      * @param path URI of the controller.
-     * @param token Which test token to use for this call, or `null` if via non-user.
+     * @param token Which [TestTokens] to use for this call, or `null` if non-user.
      * @param body Data body in the request for `POST` calls.
-     * @see TestTokens
      */
     protected fun mockRequest(
         requestType: HttpMethod,

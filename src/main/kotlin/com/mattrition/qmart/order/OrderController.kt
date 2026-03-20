@@ -33,14 +33,14 @@ class OrderController(
     ): List<OrderDto> = orderService.getOrdersBoughtBy(username)
 
     @GetMapping("/sellerId/{sellerId}")
-    @PreAuthorize("#sellerId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #sellerId == authentication.principal.id")
     fun getRelevantOrdersToSeller(
         @PathVariable sellerId: UUID,
         @RequestParam(required = true) unfinished: Boolean,
     ): List<OrderDto> = orderService.getOrdersForSeller(sellerId, unfinished)
 
     @PostMapping
-    @PreAuthorize("#orderInfo.buyerId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #orderInfo.buyerId == authentication.principal.id")
     fun createOrder(
         @RequestBody orderInfo: OrderDto,
     ): ResponseEntity<OrderDto> {

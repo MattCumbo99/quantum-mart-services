@@ -3,39 +3,38 @@ package com.mattrition.qmart.order.mapper
 import com.mattrition.qmart.order.Order
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
+import com.mattrition.qmart.util.EntityMapper
 
-object OrderMapper {
-    /** Converts an [Order] database entity into a data transfer object. */
-    fun toDto(order: Order) =
+object OrderMapper : EntityMapper<Order, OrderDto> {
+    override fun toDto(entity: Order) =
         OrderDto(
-            id = order.id!!,
-            buyerId = order.buyerId!!,
-            status = order.status,
-            totalPaid = order.totalPaid,
-            createdAt = order.createdAt,
-            shippingFirstname = order.shippingFirstname,
-            shippingLastname = order.shippingLastname,
-            shippingAddress1 = order.shippingAddress1,
-            shippingAddress2 = order.shippingAddress2,
-            shippingCity = order.shippingCity,
-            shippingState = order.shippingState,
-            shippingZip = order.shippingZip,
-            shippingPhone = order.shippingPhone,
-            orderItems = order.orderItems.map { OrderItemMapper.toDto(it) },
+            id = entity.id!!,
+            buyerId = entity.buyerId!!,
+            status = entity.status,
+            totalPaid = entity.totalPaid,
+            createdAt = entity.createdAt,
+            shippingFirstname = entity.shippingFirstname,
+            shippingLastname = entity.shippingLastname,
+            shippingAddress1 = entity.shippingAddress1,
+            shippingAddress2 = entity.shippingAddress2,
+            shippingCity = entity.shippingCity,
+            shippingState = entity.shippingState,
+            shippingZip = entity.shippingZip,
+            shippingPhone = entity.shippingPhone,
+            orderItems = entity.orderItems.map { OrderItemMapper.toDto(it) },
         )
 
-    /** Converts an order DTO into a savable entity for the Order database. */
-    fun asNewEntity(orderDto: OrderDto) =
+    override fun asNewEntity(dto: OrderDto) =
         Order(
-            buyerId = orderDto.buyerId,
-            totalPaid = orderDto.totalPaid,
-            shippingFirstname = orderDto.shippingFirstname,
-            shippingLastname = orderDto.shippingLastname,
-            shippingAddress1 = orderDto.shippingAddress1,
-            shippingAddress2 = orderDto.shippingAddress2,
-            shippingCity = orderDto.shippingCity,
-            shippingState = orderDto.shippingState,
-            shippingZip = orderDto.shippingZip,
-            shippingPhone = orderDto.shippingPhone,
+            buyerId = dto.buyerId,
+            totalPaid = dto.totalPaid,
+            shippingFirstname = dto.shippingFirstname,
+            shippingLastname = dto.shippingLastname,
+            shippingAddress1 = dto.shippingAddress1,
+            shippingAddress2 = dto.shippingAddress2,
+            shippingCity = dto.shippingCity,
+            shippingState = dto.shippingState,
+            shippingZip = dto.shippingZip,
+            shippingPhone = dto.shippingPhone,
         )
 }

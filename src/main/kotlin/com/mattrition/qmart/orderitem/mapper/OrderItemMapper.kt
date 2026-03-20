@@ -3,24 +3,9 @@ package com.mattrition.qmart.orderitem.mapper
 import com.mattrition.qmart.cart.dto.CartItemWithListingDto
 import com.mattrition.qmart.orderitem.OrderItem
 import com.mattrition.qmart.orderitem.dto.OrderItemDto
+import com.mattrition.qmart.util.EntityMapper
 
-object OrderItemMapper {
-    fun toDto(orderItem: OrderItem) =
-        OrderItemDto(
-            id = orderItem.id!!,
-            listingId = orderItem.listingId!!,
-            sellerId = orderItem.sellerId!!,
-            quantity = orderItem.quantity,
-            listingPrice = orderItem.listingPrice,
-            status = orderItem.status,
-            paidAt = orderItem.paidAt,
-            listingTitle = orderItem.listingTitle,
-            listingDescription = orderItem.listingDescription,
-            listingImageUrl = orderItem.listingImageUrl,
-            shippedOn = orderItem.shippedOn,
-            completedOn = orderItem.completedOn,
-        )
-
+object OrderItemMapper : EntityMapper<OrderItem, OrderItemDto> {
     /** Converts a cart item DTO to an order item DTO. */
     fun fromCartItemDto(cartItemDto: CartItemWithListingDto) =
         OrderItemDto(
@@ -33,15 +18,31 @@ object OrderItemMapper {
             listingImageUrl = cartItemDto.itemListing.imageUrl,
         )
 
-    fun asNewEntity(orderItemDto: OrderItemDto) =
+    override fun toDto(entity: OrderItem) =
+        OrderItemDto(
+            id = entity.id!!,
+            listingId = entity.listingId!!,
+            sellerId = entity.sellerId!!,
+            quantity = entity.quantity,
+            listingPrice = entity.listingPrice,
+            status = entity.status,
+            paidAt = entity.paidAt,
+            listingTitle = entity.listingTitle,
+            listingDescription = entity.listingDescription,
+            listingImageUrl = entity.listingImageUrl,
+            shippedOn = entity.shippedOn,
+            completedOn = entity.completedOn,
+        )
+
+    override fun asNewEntity(dto: OrderItemDto) =
         OrderItem(
-            listingId = orderItemDto.listingId,
-            sellerId = orderItemDto.sellerId,
-            quantity = orderItemDto.quantity,
-            listingPrice = orderItemDto.listingPrice,
-            paidAt = orderItemDto.paidAt,
-            listingTitle = orderItemDto.listingTitle,
-            listingDescription = orderItemDto.listingDescription,
-            listingImageUrl = orderItemDto.listingImageUrl,
+            listingId = dto.listingId,
+            sellerId = dto.sellerId,
+            quantity = dto.quantity,
+            listingPrice = dto.listingPrice,
+            paidAt = dto.paidAt,
+            listingTitle = dto.listingTitle,
+            listingDescription = dto.listingDescription,
+            listingImageUrl = dto.listingImageUrl,
         )
 }
