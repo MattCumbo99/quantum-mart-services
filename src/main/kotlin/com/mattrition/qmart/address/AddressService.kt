@@ -88,7 +88,7 @@ class AddressService(
 
     private fun ensureUserOwnsAddress(address: Address) {
         val auth = SecurityContextHolder.getContext().authentication
-        val principal = auth?.principal as CustomUserDetails
+        val principal = auth!!.principal as CustomUserDetails
 
         if (address.userId != principal.id) {
             throw ForbiddenException("User not authorized.")

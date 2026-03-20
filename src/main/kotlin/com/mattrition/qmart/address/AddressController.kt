@@ -43,6 +43,7 @@ class AddressController(
     }
 
     @DeleteMapping("/{addressId}")
+    @RolesAllowed(UserRole.USER)
     fun deleteAddress(
         @PathVariable addressId: UUID,
     ) {
