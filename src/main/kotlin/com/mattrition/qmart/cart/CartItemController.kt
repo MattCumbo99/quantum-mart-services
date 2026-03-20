@@ -17,26 +17,26 @@ import java.util.UUID
 class CartItemController(
     private val cartService: CartItemService,
 ) {
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @GetMapping("/user/{userId}")
     fun getCartItemsByUserId(
         @PathVariable userId: UUID,
     ): List<CartItemWithListingDto> = cartService.getCartItemsByUserId(userId)
 
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @PostMapping("/user/{userId}")
     fun addItemToCart(
         @PathVariable userId: UUID,
         @RequestBody listing: ItemListingDto,
     ): CartItemWithListingDto = cartService.addItemToCart(userId, listing, itemQuantity = 1)
 
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @DeleteMapping("/user/{userId}")
     fun clearCartItems(
         @PathVariable userId: UUID,
     ) = cartService.deleteCartItemsByUserId(userId)
 
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @DeleteMapping("/user/{userId}/listing/{listingId}")
     fun deleteCartItemFromUser(
         @PathVariable userId: UUID,

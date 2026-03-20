@@ -3,6 +3,7 @@ package com.mattrition.qmart.address
 import com.mattrition.qmart.address.dto.AddressDto
 import com.mattrition.qmart.address.mapper.AddressMapper
 import com.mattrition.qmart.auth.CustomUserDetails
+import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
 import jakarta.transaction.Transactional
@@ -31,9 +32,18 @@ class AddressService(
         return AddressMapper.toDto(address)
     }
 
-    /** Saves a new address to the database. */
+    /**
+     * Saves a new address to the database.
+     *
+     * @throws BadRequestException If the address is marked as primary and a primary address already
+     *   exists for the user.
+     */
     fun createAddress(addressDto: AddressDto): AddressDto {
         val needsPrimary = addressRepository.findPrimaryAddress(addressDto.userId) == null
+
+        if (!needsPrimary && addressDto.isPrimary) {
+            throw BadRequestException("User already has a primary address.")
+        }
 
         val entity = AddressMapper.asNewEntity(addressDto.copy(isPrimary = needsPrimary))
         val saved = addressRepository.save(entity)

@@ -20,14 +20,14 @@ import java.util.UUID
 class AddressController(
     private val addressService: AddressService,
 ) {
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @GetMapping("/user/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id")
     fun getUserAddresses(
         @PathVariable userId: UUID,
     ): List<AddressDto> = addressService.getUserAddresses(userId)
 
     @GetMapping("/primary/{userId}")
-    @PreAuthorize("#userId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     fun getUserPrimaryAddress(
         @PathVariable userId: UUID,
     ): AddressDto = addressService.getUserPrimaryAddress(userId)

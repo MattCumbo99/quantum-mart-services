@@ -23,6 +23,7 @@ object AddressMapper : EntityMapper<Address, AddressDto> {
     override fun asNewEntity(dto: AddressDto) =
         Address(
             userId = dto.userId,
+            isPrimary = dto.isPrimary,
             firstName = dto.firstName,
             lastName = dto.lastName,
             addressLine1 = dto.addressLine1,
