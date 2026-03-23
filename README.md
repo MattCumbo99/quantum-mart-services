@@ -13,6 +13,7 @@
 ## Table of Contents
 - [Architecture Summary](#architecture-summary)
 - [API Overview](#api-overview)
+- [Getting Started](#getting-started)
 - [Developer Setup](#developer-setup)
 - [Testing](#testing)
 - [Roadmap](#roadmap)
