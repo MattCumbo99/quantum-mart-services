@@ -17,6 +17,7 @@ object AddressMapper : EntityMapper<Address, AddressDto> {
             city = entity.city,
             state = entity.state,
             zip = entity.zip,
+            phone = entity.phone,
             createdAt = entity.createdAt,
         )
 
@@ -31,5 +32,6 @@ object AddressMapper : EntityMapper<Address, AddressDto> {
             city = dto.city,
             state = dto.state,
             zip = dto.zip,
+            phone = dto.phone,
         )
 }

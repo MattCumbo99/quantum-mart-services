@@ -35,6 +35,7 @@ class AddressControllerTest : BaseH2Test() {
                 state = "test",
                 zip = "12345",
                 addressLine1 = "555 Quahog",
+                phone = "555-555-5555",
             )
     }
 

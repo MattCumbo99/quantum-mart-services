@@ -1,0 +1,5 @@
+ALTER TABLE addresses
+    ADD COLUMN phone TEXT NOT NULL DEFAULT 'TEMP';
+
+ALTER TABLE addresses
+    ALTER COLUMN phone DROP DEFAULT;

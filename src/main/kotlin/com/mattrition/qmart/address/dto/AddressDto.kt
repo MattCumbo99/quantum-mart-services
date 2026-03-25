@@ -14,5 +14,6 @@ data class AddressDto(
     val city: String,
     val state: String,
     val zip: String,
+    val phone: String,
     val createdAt: OffsetDateTime = OffsetDateTime.now(),
 )

@@ -28,6 +28,7 @@
 | address_line2 | `TEXT`                     | Yes      | `null`  | Second line of address (unit number).        |
 | city          | `TEXT`                     | No       |         |                                              |
 | zip           | `TEXT`                     | No       |         | ZIP code.                                    |
+| phone         | `TEXT`                     | No       |         | Phone number.                                |
 | created_at    | `TIMESTAMP WITH TIME ZONE` | No       | `now()` | Date of creation for the entity.             |
 
 ## 🎯Purpose
