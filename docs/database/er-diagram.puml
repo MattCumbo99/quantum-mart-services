@@ -8,10 +8,13 @@ class ItemListing <<table>>
 class Order <<table>>
 class OrderItem <<table>>
 class CartItem <<table>>
+class Addresses <<table>>
 
 User "0..*" -up-> CartItem
 
 User "0..*" -right-> Order
+
+User "0..*" -down-> Addresses
 
 CartItem "1" -left-> ItemListing
 ItemListing "0..*" -> User
