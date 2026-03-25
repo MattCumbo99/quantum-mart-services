@@ -107,14 +107,17 @@ abstract class BaseH2Test {
                     TestUsers.superadmin = newUser
                     TestTokens.superadmin = token
                 }
+
                 UserRole.ADMIN -> {
                     TestUsers.admin = newUser
                     TestTokens.admin = token
                 }
+
                 UserRole.MODERATOR -> {
                     TestUsers.moderator = newUser
                     TestTokens.moderator = token
                 }
+
                 else -> {
                     TestUsers.user = newUser
                     TestTokens.user = token

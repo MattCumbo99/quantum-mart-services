@@ -1,9 +1,10 @@
 plugins {
     kotlin("jvm") version "2.2.21"
+    kotlin("plugin.jpa") version "2.3.20"
     kotlin("plugin.spring") version "2.2.21"
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
-    id("com.diffplug.spotless") version "7.0.4"
+    id("com.diffplug.spotless") version "8.4.0"
 }
 
 group = "com.mattrition"
@@ -49,7 +50,7 @@ spotless {
     kotlin {
         target("**/*.kt")
 
-        ktfmt().kotlinlangStyle().configure {
+        ktfmt("0.62").kotlinlangStyle().configure {
             it.setBlockIndent(4)
             it.setContinuationIndent(4)
             it.setMaxWidth(100)
@@ -58,7 +59,7 @@ spotless {
         ktlint()
     }
     kotlinGradle {
-        ktfmt()
+        ktfmt("0.62")
         ktlint()
     }
 }
