@@ -136,7 +136,7 @@ abstract class BaseH2Test {
     protected fun initListings(): List<ItemListing> {
         itemListingRepository.save(
             ItemListing(
-                sellerId = TestUsers.moderator.id,
+                sellerId = TestUsers.moderator.id!!,
                 title = "Test Listing 1",
                 description = "Test listing.",
                 price = BigDecimal.valueOf(100),
@@ -145,7 +145,7 @@ abstract class BaseH2Test {
 
         itemListingRepository.save(
             ItemListing(
-                sellerId = TestUsers.admin.id,
+                sellerId = TestUsers.admin.id!!,
                 title = "Test Listing 2",
                 description = "Test listing, but admin.",
                 price = BigDecimal.valueOf(250),

@@ -9,7 +9,7 @@ object OrderMapper : EntityMapper<Order, OrderDto> {
     override fun toDto(entity: Order) =
         OrderDto(
             id = entity.id!!,
-            buyerId = entity.buyerId!!,
+            buyerId = entity.buyerId,
             status = entity.status,
             totalPaid = entity.totalPaid,
             createdAt = entity.createdAt,

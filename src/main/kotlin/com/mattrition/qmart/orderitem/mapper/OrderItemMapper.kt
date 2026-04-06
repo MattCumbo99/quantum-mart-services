@@ -21,8 +21,8 @@ object OrderItemMapper : EntityMapper<OrderItem, OrderItemDto> {
     override fun toDto(entity: OrderItem) =
         OrderItemDto(
             id = entity.id!!,
-            listingId = entity.listingId!!,
-            sellerId = entity.sellerId!!,
+            listingId = entity.listingId,
+            sellerId = entity.sellerId,
             quantity = entity.quantity,
             listingPrice = entity.listingPrice,
             status = entity.status,

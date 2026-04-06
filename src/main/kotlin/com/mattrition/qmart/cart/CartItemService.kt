@@ -4,7 +4,7 @@ import com.mattrition.qmart.cart.dto.CartItemWithListingDto
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.itemlisting.ItemListingRepository
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
-import com.mattrition.qmart.itemlisting.dto.toDto
+import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -23,18 +23,20 @@ class CartItemService(
             cartItemRepo.findCartItemsByUserId(userId).ifEmpty {
                 return emptyList()
             }
-        val listingIds = cartItems.mapNotNull { it.listingId }
+
+        val listingIds = cartItems.map { it.listingId }
+
         // Retrieve information on each listing
         val itemListings = itemListingRepo.findAllById(listingIds).associateBy { it.id }
 
         return cartItems.map { cartItem ->
             val listing = itemListings[cartItem.listingId]!!
-            val sellerUsername = userRepo.findById(listing.sellerId!!).get().username
+            val sellerUsername = userRepo.findById(listing.sellerId).get().username
 
             CartItemWithListingDto(
                 cartItemId = cartItem.id!!,
                 quantity = cartItem.quantity,
-                itemListing = listing.toDto(sellerUsername),
+                itemListing = ItemListingMapper.toDto(listing, sellerUsername),
             )
         }
     }
@@ -69,7 +71,7 @@ class CartItemService(
         return if (existingItem == null) {
             val savedCartItem =
                 cartItemRepo.save(
-                    CartItem(userId = userId, listingId = listingDto.id, quantity = itemQuantity),
+                    CartItem(userId = userId, listingId = listingDto.id!!, quantity = itemQuantity),
                 )
 
             CartItemWithListingDto(

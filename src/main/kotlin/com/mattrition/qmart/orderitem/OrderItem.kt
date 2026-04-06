@@ -23,8 +23,8 @@ class OrderItem(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     var id: UUID? = null,
-    @Column(name = "listing_id", nullable = false) var listingId: UUID? = null,
-    @Column(name = "seller_id", nullable = false) var sellerId: UUID? = null,
+    @Column(name = "listing_id", nullable = false) var listingId: UUID,
+    @Column(name = "seller_id", nullable = false) var sellerId: UUID,
     @Column(nullable = false) var quantity: Int = 0,
     @Column(name = "listing_price", nullable = false)
     var listingPrice: BigDecimal = BigDecimal.ZERO,
@@ -32,7 +32,7 @@ class OrderItem(
     @Enumerated(EnumType.STRING)
     var status: OrderItemStatus = OrderItemStatus.PAID_PENDING_SHIPMENT,
     @Column(name = "paid_at", nullable = false) var paidAt: OffsetDateTime = OffsetDateTime.now(),
-    @Column(name = "listing_title", nullable = false) var listingTitle: String = "",
+    @Column(name = "listing_title", nullable = false) var listingTitle: String,
     @Column(name = "listing_description") var listingDescription: String? = null,
     @Column(name = "listing_image_url") var listingImageUrl: String? = null,
     @Column(name = "shipped_on") var shippedOn: OffsetDateTime? = null,

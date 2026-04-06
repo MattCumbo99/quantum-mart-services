@@ -28,8 +28,8 @@ class User(
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.AUTO)
     var id: UUID? = null,
-    @Column(nullable = false) var username: String = "",
-    @Column(name = "password_hash", nullable = false) var passwordHash: String = "",
+    @Column(nullable = false) var username: String,
+    @Column(name = "password_hash", nullable = false) var passwordHash: String,
     @Column(name = "created_at", nullable = false)
     var createdAt: OffsetDateTime = OffsetDateTime.now(),
     var email: String? = null,

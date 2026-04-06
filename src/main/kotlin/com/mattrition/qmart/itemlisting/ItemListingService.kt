@@ -2,7 +2,7 @@ package com.mattrition.qmart.itemlisting
 
 import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
-import com.mattrition.qmart.itemlisting.dto.toDto
+import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,9 +17,9 @@ class ItemListingService(
     /** Retrieves a list containing every item listing in the database. */
     fun getAllListings(): List<ItemListingDto> =
         itemListingRepo.findAll().map { listing ->
-            val sellerUsername = userRepo.findById(listing.sellerId!!).get().username
+            val sellerUsername = userRepo.findById(listing.sellerId).get().username
 
-            listing.toDto(sellerUsername)
+            ItemListingMapper.toDto(listing, sellerUsername)
         }
 
     /**
@@ -32,9 +32,9 @@ class ItemListingService(
             itemListingRepo.findById(id).getOrElse {
                 throw NotFoundException("Listing with ID not found: $id")
             }
-        val sellerUsername = userRepo.findById(listing.sellerId!!).get().username
+        val sellerUsername = userRepo.findById(listing.sellerId).get().username
 
-        return listing.toDto(sellerUsername)
+        return ItemListingMapper.toDto(listing, sellerUsername)
     }
 
     /**
@@ -47,7 +47,9 @@ class ItemListingService(
             userRepo.findByUsernameIgnoreCase(username)?.id
                 ?: throw NotFoundException("Username does not exist: $username")
 
-        return itemListingRepo.findItemListingsBySellerId(userId).map { it.toDto(username) }
+        return itemListingRepo.findItemListingsBySellerId(userId).map {
+            ItemListingMapper.toDto(it, username)
+        }
     }
 
     @Transactional fun deleteListingById(id: UUID) = itemListingRepo.deleteItemListingById(id)
@@ -63,6 +65,9 @@ class ItemListingService(
                 imageUrl = itemListing.imageUrl,
             )
 
-        return itemListingRepo.save(listingEntry).toDto(itemListing.sellerUsername)
+        return ItemListingMapper.toDto(
+            itemListingRepo.save(listingEntry),
+            itemListing.sellerUsername,
+        )
     }
 }

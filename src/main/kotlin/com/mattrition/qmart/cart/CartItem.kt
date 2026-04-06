@@ -15,7 +15,7 @@ class CartItem(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     var id: UUID? = null,
-    @Column("user_id") var userId: UUID? = null,
-    @Column("listing_id") var listingId: UUID? = null,
-    var quantity: Int = 1,
+    @Column(name = "user_id", nullable = false) var userId: UUID,
+    @Column(name = "listing_id", nullable = false) var listingId: UUID,
+    @Column(nullable = false) var quantity: Int = 1,
 )

@@ -15,5 +15,6 @@ object UserMapper : EntityMapper<User, UserDto> {
             role = entity.role,
         )
 
+    @Deprecated(message = "Method is not implemented.", level = DeprecationLevel.ERROR)
     override fun asNewEntity(dto: UserDto): User = throw NotImplementedError()
 }

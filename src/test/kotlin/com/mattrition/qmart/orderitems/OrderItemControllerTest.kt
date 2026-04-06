@@ -4,7 +4,7 @@ import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.cart.CartItem
 import com.mattrition.qmart.cart.CartItemRepository
 import com.mattrition.qmart.cart.dto.CartItemWithListingDto
-import com.mattrition.qmart.itemlisting.dto.toDto
+import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.order.OrderService
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.OrderItemRepository
@@ -63,7 +63,10 @@ class OrderItemControllerTest : BaseH2Test() {
                                     cartItemId = cartItem.id!!,
                                     quantity = cartItem.quantity,
                                     itemListing =
-                                        listings.first().toDto(TestUsers.moderator.username),
+                                        ItemListingMapper.toDto(
+                                            listings.first(),
+                                            TestUsers.moderator.username,
+                                        ),
                                 ),
                             ),
                         ),

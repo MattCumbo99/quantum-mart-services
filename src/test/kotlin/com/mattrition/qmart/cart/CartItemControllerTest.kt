@@ -3,7 +3,7 @@ package com.mattrition.qmart.cart
 import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
-import com.mattrition.qmart.itemlisting.dto.toDto
+import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldBeNull
@@ -39,14 +39,13 @@ class CartItemControllerTest : BaseH2Test() {
     fun addCartItems() {
         val listings = super.initListings()
         listing1 = listings.last()
-        listing1Dto = listing1.toDto(TestUsers.admin.username)
+        listing1Dto = ItemListingMapper.toDto(listing1, TestUsers.admin.username)
 
         listing2 = listings.first()
-        listing2Dto = listing2.toDto(TestUsers.moderator.username)
+        listing2Dto = ItemListingMapper.toDto(listing2, TestUsers.moderator.username)
 
-        val item1 = CartItem(userId = TestUsers.user.id, listingId = listing1.id, quantity = 1)
-
-        val item2 = CartItem(userId = TestUsers.user.id, listingId = listing2.id, quantity = 1)
+        val item1 = CartItem(userId = TestUsers.user.id!!, listingId = listing1.id!!, quantity = 1)
+        val item2 = CartItem(userId = TestUsers.user.id!!, listingId = listing2.id!!, quantity = 1)
 
         cartItem1 = cartItemRepository.save(item1)
         cartItem2 = cartItemRepository.save(item2)

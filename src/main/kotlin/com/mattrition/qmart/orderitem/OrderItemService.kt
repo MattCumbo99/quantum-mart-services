@@ -31,7 +31,7 @@ class OrderItemService(
                 throw NotFoundException("Order item with id $orderItemId does not exist.")
             }
 
-        ensureAuthUserIsSeller(orderItem.sellerId!!)
+        ensureAuthUserIsSeller(orderItem.sellerId)
         ensureStatusCanChange(orderItem.status)
         ensureNewStatusIsAllowed(newStatus)
 
