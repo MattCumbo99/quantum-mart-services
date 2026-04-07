@@ -16,16 +16,17 @@
 ## 📄Schema
 - Table name: `item_listings`
 
-| Column Name  | Datatype                    | Nullable  | Default             | Description                        |
-|--------------|-----------------------------|-----------|---------------------|------------------------------------|
-| id           | PK `UUID`                   | No        | `gen_random_uuid()` | Unique ID for the listing.         |
-| seller_id    | FK `UUID`                   | No        |                     | User ID of user selling the item.  |
-| title        | `VARCHAR(200)`              | No        |                     | Name of the listing.               |
-| description  | `TEXT`                      | Yes       |                     | Description of the listing.        |
-| price        | `NUMERIC(10,2)`             | No        |                     | How much the item costs.           |
-| image_url    | `TEXT`                      | Yes       |                     | Image URL of the product.          |
-| created_at   | `TIMESTAMP WITH TIME ZONE`  | No        | `now()`             | When the listing was created.      |
-| updated_at   | `TIMESTAMP WITH TIME ZONE`  | No        | `now()`             | When the listing was last updated. |
+| Column Name | Datatype                   | Nullable | Default             | Description                        |
+|-------------|----------------------------|----------|---------------------|------------------------------------|
+| id          | PK `UUID`                  | No       | `gen_random_uuid()` | Unique ID for the listing.         |
+| seller_id   | FK `UUID`                  | No       |                     | User ID of user selling the item.  |
+| title       | `VARCHAR(200)`             | No       |                     | Name of the listing.               |
+| description | `TEXT`                     | Yes      |                     | Description of the listing.        |
+| price       | `NUMERIC(10,2)`            | No       |                     | How much the item costs.           |
+| image_url   | `TEXT`                     | Yes      |                     | Image URL of the product.          |
+| created_at  | `TIMESTAMP WITH TIME ZONE` | No       | `now()`             | When the listing was created.      |
+| updated_at  | `TIMESTAMP WITH TIME ZONE` | No       | `now()`             | When the listing was last updated. |
+| is_active   | `BOOLEAN`                  | No       | true                | If the listing is for sale.        |
 
 ## 🎯Purpose
 Stores information on products currently being sold on Quantum Mart.
@@ -35,11 +36,10 @@ Stores information on products currently being sold on Quantum Mart.
 When a logged-in user submits a form containing information for a new item listing.
 
 ### 🔄Row Updates
-There are currently no functions that update a row.
+Users can update their item listings any time by setting a new title, description, price, or if it is active.
 
 ### 🗑️Row Deletion
-There are no methods to delete a row. The original seller and any user with administrative access should be allowed to take 
-down item listings in the future.
+No entries are hard-deleted. They are set to "not active" and instead is removed visibly except from the seller.
 
 ## 📌Important Columns
 - `id` - Primary key to access the item listing with.

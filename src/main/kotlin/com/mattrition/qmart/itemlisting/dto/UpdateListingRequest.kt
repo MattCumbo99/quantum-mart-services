@@ -7,5 +7,6 @@ data class UpdateListingRequest(
     val title: String? = null,
     val description: String? = null,
     val price: BigDecimal? = null,
+    val imageUrl: String? = null,
     val isActive: Boolean? = null,
 )
