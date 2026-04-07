@@ -1,14 +1,16 @@
 package com.mattrition.qmart.itemlisting
 
+import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
+import com.mattrition.qmart.itemlisting.dto.UpdateListingRequest
 import com.mattrition.qmart.user.UserRepository
-import com.mattrition.qmart.util.authHasMod
 import com.mattrition.qmart.util.authPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
 
@@ -55,25 +57,35 @@ class ItemListingService(
         }
     }
 
-    /**
-     * Deletes an item listing. The request needs to originate from the seller OR someone with at
-     * least moderator privileges.
-     */
     @Transactional
-    fun deleteListingById(id: UUID) {
+    fun updateListing(
+        id: UUID,
+        req: UpdateListingRequest,
+    ) {
         val listing =
             itemListingRepo.findById(id).getOrElse {
                 throw NotFoundException("Item listing with ID $id not found")
             }
 
-        if (!canDeleteListing(listing)) {
-            throw ForbiddenException("Unable to delete listing.")
+        if (!authOwnsListing(listing)) {
+            throw ForbiddenException("Forbidden")
         }
 
-        itemListingRepo.deleteItemListingById(id)
+        req.title?.let { listing.title = it }
+        req.description?.let { listing.description = it }
+        req.price?.let { price ->
+            if (price <= BigDecimal.ZERO) {
+                throw BadRequestException("Price must be greater than zero.")
+            }
+
+            listing.price = price
+        }
+        req.isActive?.let { listing.isActive = it }
+
+        itemListingRepo.save(listing)
     }
 
-    private fun canDeleteListing(listing: ItemListing): Boolean = authHasMod() || listing.sellerId == authPrincipal().id
+    private fun authOwnsListing(listing: ItemListing) = listing.sellerId == authPrincipal().id
 
     /** Saves a new item listing entity to the database and returns the provided information. */
     fun createListing(itemListing: ItemListingDto): ItemListingDto {

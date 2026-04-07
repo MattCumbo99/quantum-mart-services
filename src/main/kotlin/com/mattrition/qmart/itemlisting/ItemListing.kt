@@ -26,4 +26,5 @@ class ItemListing(
     var createdAt: OffsetDateTime = OffsetDateTime.now(),
     @Column(name = "updated_at", nullable = false)
     var updatedAt: OffsetDateTime = OffsetDateTime.now(),
+    @Column(name = "is_active", nullable = false) var isActive: Boolean = true,
 )

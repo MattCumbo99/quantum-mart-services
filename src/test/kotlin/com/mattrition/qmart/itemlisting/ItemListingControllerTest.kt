@@ -2,16 +2,21 @@ package com.mattrition.qmart.itemlisting
 
 import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
+import com.mattrition.qmart.itemlisting.dto.UpdateListingRequest
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpMethod.GET
+import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
 import java.util.UUID
+import kotlin.jvm.optionals.getOrNull
 
 class ItemListingControllerTest : BaseH2Test() {
     companion object {
@@ -109,6 +114,57 @@ class ItemListingControllerTest : BaseH2Test() {
         fun `should return 404 not found on unknown listing id`() {
             mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}")
                 .andExpect(status().isNotFound)
+        }
+    }
+
+    @Nested
+    inner class UpdateItemListing {
+        @Test
+        fun `should update item listing`() {
+            val req =
+                UpdateListingRequest(
+                    title = "new title",
+                    description = "new description",
+                    price = BigDecimal.valueOf(5000),
+                )
+
+            // Pre-assertion
+            listing1.title shouldNotBe req.title
+            listing1.description shouldNotBe req.description
+            listing1.price shouldNotBe req.price
+
+            mockRequest(
+                requestType = PATCH,
+                path = "$BASE_PATH/${listing1.id}",
+                token = TestTokens.moderator,
+                body = req,
+            ).andExpect(status().isOk)
+
+            val listing =
+                itemListingRepository.findById(listing1.id!!).getOrNull().shouldNotBeNull()
+            listing.title shouldBe req.title
+            listing.description shouldBe req.description
+            listing.price shouldBe req.price
+        }
+
+        @Test
+        fun `should return 403 forbidden on unknown user changing listing details`() {
+            mockRequest(
+                requestType = PATCH,
+                path = "$BASE_PATH/${listing1.id}",
+                token = null,
+                body = UpdateListingRequest(price = BigDecimal(0)),
+            ).andExpect(status().isForbidden)
+        }
+
+        @Test
+        fun `should return 400 bad request when setting price to below 0`() {
+            mockRequest(
+                requestType = PATCH,
+                path = "$BASE_PATH/${listing1.id}",
+                token = TestTokens.moderator,
+                body = UpdateListingRequest(price = BigDecimal(-1)),
+            ).andExpect(status().isBadRequest)
         }
     }
 }

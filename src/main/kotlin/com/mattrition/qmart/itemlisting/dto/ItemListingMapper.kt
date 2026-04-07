@@ -22,6 +22,7 @@ object ItemListingMapper : EntityMapper<ItemListing, ItemListingDto> {
         sellerUsername = sellerUsername,
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,
+        isActive = entity.isActive,
     )
 
     @Deprecated(
