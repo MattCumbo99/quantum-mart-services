@@ -2,12 +2,11 @@ package com.mattrition.qmart.address
 
 import com.mattrition.qmart.address.dto.AddressDto
 import com.mattrition.qmart.address.mapper.AddressMapper
-import com.mattrition.qmart.auth.CustomUserDetails
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
+import com.mattrition.qmart.util.authPrincipal
 import jakarta.transaction.Transactional
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.util.UUID
 import kotlin.jvm.optionals.getOrElse
@@ -87,8 +86,7 @@ class AddressService(
     }
 
     private fun ensureUserOwnsAddress(address: Address) {
-        val auth = SecurityContextHolder.getContext().authentication
-        val principal = auth!!.principal as CustomUserDetails
+        val principal = authPrincipal()
 
         if (address.userId != principal.id) {
             throw ForbiddenException("User not authorized.")

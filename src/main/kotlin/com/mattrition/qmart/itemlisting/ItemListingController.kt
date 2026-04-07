@@ -41,10 +41,7 @@ class ItemListingController(
         return ResponseEntity(item, HttpStatus.CREATED)
     }
 
-    // TODO This @RolesAllowed annotation should be removed eventually in favor of a business rule
-    //  which checks user role OR if the listing belongs to the user sending the
-    //  request.
-    @RolesAllowed(UserRole.MODERATOR)
+    @RolesAllowed(UserRole.USER)
     @DeleteMapping("/{listingId}")
     fun deleteListingById(
         @PathVariable listingId: UUID,
