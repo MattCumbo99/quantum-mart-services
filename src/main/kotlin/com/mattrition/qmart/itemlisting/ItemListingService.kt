@@ -107,4 +107,28 @@ class ItemListingService(
             itemListing.sellerUsername,
         )
     }
+
+    /**
+     * Increases the quantity sold on an item listing by a specified amount.
+     *
+     * @param listingId ID of the listing to modify
+     * @param amount Amount to increment by. Needs to be greater than 0.
+     */
+    fun incrementSold(
+        listingId: UUID,
+        amount: Int = 1,
+    ) {
+        if (amount <= 0) {
+            throw BadRequestException("Increment amount must be greater than 0.")
+        }
+
+        val listing =
+            itemListingRepo.findById(listingId).getOrElse {
+                throw NotFoundException("Item listing with ID $listingId not found")
+            }
+
+        listing.quantitySold += amount
+
+        itemListingRepo.save(listing)
+    }
 }

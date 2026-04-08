@@ -15,4 +15,5 @@ data class ItemListingDto(
     val createdAt: OffsetDateTime = OffsetDateTime.now(),
     val updatedAt: OffsetDateTime = OffsetDateTime.now(),
     val isActive: Boolean = true,
+    val quantitySold: Int = 0,
 )

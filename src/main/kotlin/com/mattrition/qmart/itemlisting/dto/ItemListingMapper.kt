@@ -23,6 +23,7 @@ object ItemListingMapper : EntityMapper<ItemListing, ItemListingDto> {
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,
         isActive = entity.isActive,
+        quantitySold = entity.quantitySold,
     )
 
     @Deprecated(

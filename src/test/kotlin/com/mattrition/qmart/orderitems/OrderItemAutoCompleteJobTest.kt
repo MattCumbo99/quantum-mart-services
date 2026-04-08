@@ -1,61 +1,86 @@
 package com.mattrition.qmart.orderitems
 
+import com.mattrition.qmart.BaseH2Test
+import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.jobs.OrderItemAutoCompleteJob
+import com.mattrition.qmart.order.Order
+import com.mattrition.qmart.order.OrderRepository
 import com.mattrition.qmart.orderitem.OrderItem
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.OrderItemStatus
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers
-import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import java.math.BigDecimal
 import java.time.OffsetDateTime
-import java.util.UUID
 
-@SpringBootTest
-@ActiveProfiles("test")
-class OrderItemAutoCompleteJobTest {
-    @MockitoBean lateinit var orderItemRepository: OrderItemRepository
+class OrderItemAutoCompleteJobTest : BaseH2Test() {
+    @Autowired lateinit var orderItemRepository: OrderItemRepository
 
     @Autowired lateinit var job: OrderItemAutoCompleteJob
 
+    @Autowired lateinit var orderRepository: OrderRepository
+
+    private lateinit var sampleListing: ItemListing
+    private lateinit var sampleOrder: Order
+
+    @BeforeEach
+    fun beforeEach() {
+        val listings = super.initListings()
+
+        sampleListing = listings.first()
+
+        val testOrder =
+            Order(
+                buyerId = TestUsers.user.id!!,
+                totalPaid = sampleListing.price,
+                shippingFirstname = "test",
+                shippingLastname = "test",
+                shippingAddress1 = "test",
+                shippingAddress2 = "test",
+                shippingCity = "test",
+                shippingState = "test",
+                shippingZip = "test",
+                shippingPhone = "test",
+            )
+
+        sampleOrder = orderRepository.save(testOrder)
+    }
+
     @Test
-    fun `autoCompleteShippedOrders completes eligible items`() {
+    fun `autoCompleteShippedOrders completes eligible items and increments quantity sold`() {
         val now = OffsetDateTime.now()
         val shippedYesterday = now.minusDays(1).minusHours(1)
 
+        // Create an order item referencing the listing
         val item =
-            OrderItem(
-                id = UUID.randomUUID(),
-                listingId = UUID.randomUUID(),
-                sellerId = UUID.randomUUID(),
-                quantity = 1,
-                status = OrderItemStatus.SHIPPED,
-                paidAt = now.minusDays(2),
-                listingTitle = "test title",
-                listingDescription = "test description",
-                listingPrice = BigDecimal.ZERO,
-                shippedOn = shippedYesterday,
+            orderItemRepository.save(
+                OrderItem(
+                    order = sampleOrder,
+                    listingId = sampleListing.id!!,
+                    sellerId = sampleListing.sellerId,
+                    quantity = 2,
+                    status = OrderItemStatus.SHIPPED,
+                    paidAt = now.minusDays(2),
+                    listingTitle = sampleListing.title,
+                    listingDescription = sampleListing.description,
+                    listingPrice = sampleListing.price,
+                    shippedOn = shippedYesterday,
+                ),
             )
 
-        // Stub the repository to return this item
-        Mockito
-            .`when`(
-                orderItemRepository.findAllToComplete(
-                    ArgumentMatchers.any(OffsetDateTime::class.java) ?: OffsetDateTime.now(),
-                ),
-            ).thenAnswer { listOf(item) }
-
+        // Run the job
         job.autoCompleteShippedOrders()
 
-        item.status shouldBe OrderItemStatus.COMPLETED
-        item.completedOn.shouldNotBeNull()
+        // Reload from DB
+        val updatedItem = orderItemRepository.findById(item.id!!).get()
+        val updatedListing = itemListingRepository.findById(sampleListing.id!!).get()
 
-        Mockito.verify(orderItemRepository).saveAll(listOf(item))
+        // Assertions
+        updatedItem.status shouldBe OrderItemStatus.COMPLETED
+        updatedItem.completedOn.shouldNotBeNull()
+
+        updatedListing.quantitySold shouldBe 2
     }
 }

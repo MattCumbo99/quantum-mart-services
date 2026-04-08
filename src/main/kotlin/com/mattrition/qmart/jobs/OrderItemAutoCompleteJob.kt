@@ -1,5 +1,6 @@
 package com.mattrition.qmart.jobs
 
+import com.mattrition.qmart.itemlisting.ItemListingService
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.OrderItemStatus
 import org.slf4j.LoggerFactory
@@ -10,6 +11,7 @@ import java.time.OffsetDateTime
 @Service
 class OrderItemAutoCompleteJob(
     private val orderItemRepository: OrderItemRepository,
+    private val itemListingService: ItemListingService,
 ) {
     private val log = LoggerFactory.getLogger(OrderItemAutoCompleteJob::class.java)
 
@@ -27,6 +29,9 @@ class OrderItemAutoCompleteJob(
         itemsToComplete.forEach { item ->
             item.status = OrderItemStatus.COMPLETED
             item.completedOn = now
+
+            // Increase the amount sold by the quantity
+            itemListingService.incrementSold(item.listingId, item.quantity)
         }
 
         orderItemRepository.saveAll(itemsToComplete)
