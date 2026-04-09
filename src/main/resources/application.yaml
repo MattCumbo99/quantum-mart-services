@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: quantum-mart-services
+
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  flyway:
+    url: ${DB_URL}
+    user: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+jwt:
+  secret: 1d2i0jf0923thg91wd1uegh03hth13irh9fj31h12rh129
+
+logging:
+  level:
+    root: INFO
+    org:
+      hibernate:
+        orm:
+          connections:
+            # Disables showing database information on startup
+            pooling: WARN

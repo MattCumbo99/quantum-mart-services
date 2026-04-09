@@ -15,3 +15,7 @@ spring:
 
 jwt:
   secret: qKbdSQ3bgLRZJWH29euWFYxG2PZrBCEgPQJWPOs0v1P
+
+jobs:
+  autoComplete:
+    cron: "0 0 10 * * *"

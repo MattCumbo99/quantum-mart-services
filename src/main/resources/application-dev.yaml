@@ -1,0 +1,4 @@
+jobs:
+  autoComplete:
+    # Runs every 5 minutes
+    cron: "0 */5 * * * *"
