@@ -3,11 +3,13 @@ package com.mattrition.qmart.orderitems
 import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.jobs.OrderItemAutoCompleteJob
+import com.mattrition.qmart.notification.NotificationRepository
 import com.mattrition.qmart.order.Order
 import com.mattrition.qmart.order.OrderRepository
 import com.mattrition.qmart.orderitem.OrderItem
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.OrderItemStatus
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
@@ -21,6 +23,8 @@ class OrderItemAutoCompleteJobTest : BaseH2Test() {
     @Autowired lateinit var job: OrderItemAutoCompleteJob
 
     @Autowired lateinit var orderRepository: OrderRepository
+
+    @Autowired lateinit var notificationRepository: NotificationRepository
 
     private lateinit var sampleListing: ItemListing
     private lateinit var sampleOrder: Order
@@ -82,5 +86,9 @@ class OrderItemAutoCompleteJobTest : BaseH2Test() {
         updatedItem.completedOn.shouldNotBeNull()
 
         updatedListing.quantitySold shouldBe 2
+
+        // Ensure notification was sent
+        val userNotifs = notificationRepository.findByUser(TestUsers.user.id!!)
+        userNotifs shouldHaveSize 1
     }
 }

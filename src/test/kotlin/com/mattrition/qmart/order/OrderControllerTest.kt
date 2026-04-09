@@ -4,6 +4,7 @@ import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.cart.CartItem
 import com.mattrition.qmart.cart.CartItemRepository
 import com.mattrition.qmart.itemlisting.ItemListing
+import com.mattrition.qmart.notification.NotificationRepository
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.user.BalanceService
 import io.kotest.matchers.collections.shouldHaveSize
@@ -33,6 +34,8 @@ class OrderControllerTest : BaseH2Test() {
     @Autowired lateinit var orderItemRepository: OrderItemRepository
 
     @Autowired lateinit var balanceService: BalanceService
+
+    @Autowired lateinit var notificationRepository: NotificationRepository
 
     private lateinit var sampleListing1: ItemListing
     private lateinit var sampleListing2: ItemListing
@@ -184,6 +187,10 @@ class OrderControllerTest : BaseH2Test() {
             // Order items associated with the order were created
             val userOrderItems = orderItemRepository.findOrderItemsByOrderId(userOrder.id!!)
             userOrderItems shouldHaveSize 2 // Two items were in the cart
+
+            // Ensure 2 notifications were sent to the seller, 1 per item
+            val adminNotifs = notificationRepository.findByUser(TestUsers.superadmin.id!!)
+            adminNotifs shouldHaveSize 2
         }
     }
 }
