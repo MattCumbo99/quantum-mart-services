@@ -66,6 +66,15 @@ class NotificationService(
         notificationRepository.save(notif)
     }
 
+    /**
+     * Hides all active notifications for a user.
+     */
+    fun hideAllNotifications(userId: UUID) {
+        notificationRepository.findByUser(userId).forEach { notif ->
+            hideNotification(notif.id!!)
+        }
+    }
+
     private fun getNotification(id: UUID) =
         notificationRepository.findById(id).getOrElse {
             throw NotFoundException("Notification $id not found.")

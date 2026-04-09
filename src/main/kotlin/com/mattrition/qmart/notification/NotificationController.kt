@@ -33,4 +33,10 @@ class NotificationController(
     fun readNotificationForUser(
         @PathVariable notificationId: UUID,
     ) = notificationService.readNotification(notificationId)
+
+    @RolesAllowed(UserRole.USER)
+    @PatchMapping("/user/{userId}/hideAll")
+    fun hideAllForUser(
+        @PathVariable userId: UUID,
+    ) = notificationService.hideAllNotifications(userId)
 }
