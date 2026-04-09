@@ -54,14 +54,7 @@ class NotificationService(
 
         ensureUserOwnership(notif)
 
-        val now = OffsetDateTime.now()
-
-        if (notif.readAt == null) {
-            // Mark it as read just in case it wasn't explicitly marked yet
-            notif.readAt = now
-        }
-
-        notif.deletedAt = now
+        notif.deletedAt = OffsetDateTime.now()
 
         notificationRepository.save(notif)
     }
