@@ -77,9 +77,7 @@ class OrderItemService(
         notificationService.createNotification(
             userId = buyerId,
             message = "Your order for ${orderItem.listingTitle} has shipped.",
-            // TODO As of April 9th 2026, this route on the frontend is invalid. Adjust this route
-            //  as needed when the URLs for singular orders are implemented.
-            route = "/purchases/${orderItem.id!!}",
+            route = "/purchases",
         )
     }
 
