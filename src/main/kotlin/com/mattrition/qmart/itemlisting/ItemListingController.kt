@@ -1,5 +1,6 @@
 package com.mattrition.qmart.itemlisting
 
+import com.mattrition.qmart.itemlisting.dto.CreateListingRequest
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.UpdateListingRequest
 import com.mattrition.qmart.user.UserRole
@@ -35,9 +36,9 @@ class ItemListingController(
     @RolesAllowed(UserRole.USER)
     @PostMapping
     fun createListing(
-        @RequestBody itemListing: ItemListingDto,
+        @RequestBody request: CreateListingRequest,
     ): ResponseEntity<ItemListingDto> {
-        val item = service.createListing(itemListing)
+        val item = service.createListing(request)
 
         return ResponseEntity(item, HttpStatus.CREATED)
     }

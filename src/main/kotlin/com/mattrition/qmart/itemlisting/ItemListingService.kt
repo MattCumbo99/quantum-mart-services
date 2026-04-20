@@ -3,6 +3,7 @@ package com.mattrition.qmart.itemlisting
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
+import com.mattrition.qmart.itemlisting.dto.CreateListingRequest
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.itemlisting.dto.UpdateListingRequest
@@ -92,20 +93,21 @@ class ItemListingService(
     private fun authOwnsListing(listing: ItemListing) = listing.sellerId == authPrincipal().id
 
     /** Saves a new item listing entity to the database and returns the provided information. */
-    fun createListing(itemListing: ItemListingDto): ItemListingDto {
+    fun createListing(request: CreateListingRequest): ItemListingDto {
+        val authUser = authPrincipal()
+
         val listingEntry =
             ItemListing(
-                sellerId = itemListing.sellerId,
-                title = itemListing.title,
-                description = itemListing.description,
-                price = itemListing.price,
-                imageUrl = itemListing.imageUrl,
+                sellerId = authUser.id,
+                title = request.title,
+                description = request.description,
+                imageUrl = request.imageUrl,
+                price = request.price,
             )
 
-        return ItemListingMapper.toDto(
-            itemListingRepo.save(listingEntry),
-            itemListing.sellerUsername,
-        )
+        val saved = itemListingRepo.save(listingEntry)
+
+        return ItemListingMapper.toDto(saved, authUser.username)
     }
 
     /**

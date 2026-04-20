@@ -28,4 +28,7 @@ class ItemListing(
     var updatedAt: OffsetDateTime = OffsetDateTime.now(),
     @Column(name = "is_active", nullable = false) var isActive: Boolean = true,
     @Column(name = "quantity_sold", nullable = false) var quantitySold: Int = 0,
+    @Column(name = "review_count", nullable = false) var reviewCount: Int = 0,
+    @Column(name = "average_score", nullable = false)
+    var averageScore: BigDecimal = BigDecimal("0.0"),
 )
