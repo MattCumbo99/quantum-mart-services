@@ -1,6 +1,5 @@
 # Addresses Table
 
-----
 ## Table of Contents
 - [Schema](#Schema)
 - [Purpose](#purpose)
