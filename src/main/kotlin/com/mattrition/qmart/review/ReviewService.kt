@@ -102,6 +102,10 @@ class ReviewService(
 
         request.newBody?.let { review.body = it }
         request.newScore?.let { newScore ->
+            if (newScore !in 1..5) {
+                throw BadRequestException("New score must be between 1 and 5 (was $newScore)")
+            }
+
             // Adjust the listing with the new score
             val listing = itemListingRepository.findById(review.listingId).get()
 
