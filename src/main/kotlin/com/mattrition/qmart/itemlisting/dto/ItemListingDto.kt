@@ -16,4 +16,6 @@ data class ItemListingDto(
     val updatedAt: OffsetDateTime = OffsetDateTime.now(),
     val isActive: Boolean = true,
     val quantitySold: Int = 0,
+    val reviewCount: Int = 0,
+    val averageScore: BigDecimal = BigDecimal("0.0"),
 )
