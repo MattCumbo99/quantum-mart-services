@@ -16,19 +16,19 @@
 ## 📄Schema
 - Table name: `addresses`
 
-| Column Name   | Datatype                   | Nullable | Default | Description                                  |
-|---------------|----------------------------|----------|---------|----------------------------------------------|
-| id            | PK `UUID`                  | No       |         | Entity identifier.                           |
-| user_id       | FK `UUID`                  | No       |         | Linked user.                                 |
-| is_primary    | `BOOLEAN`                  | No       | false   | Marks the address as the user's primary.     |
-| first_name    | `TEXT`                     | No       |         |                                              |
-| last_name     | `TEXT`                     | No       |         |                                              |
-| address_line1 | `TEXT`                     | No       |         | First line of address (street, number, etc). |
-| address_line2 | `TEXT`                     | Yes      | `null`  | Second line of address (unit number).        |
-| city          | `TEXT`                     | No       |         |                                              |
-| zip           | `TEXT`                     | No       |         | ZIP code.                                    |
-| phone         | `TEXT`                     | No       |         | Phone number.                                |
-| created_at    | `TIMESTAMP WITH TIME ZONE` | No       | `now()` | Date of creation for the entity.             |
+| Column Name   | Datatype                   | Nullable | Default             | Description                                  |
+|---------------|----------------------------|----------|---------------------|----------------------------------------------|
+| id            | PK `UUID`                  | No       | `gen_random_uuid()` | Entity identifier.                           |
+| user_id       | FK `UUID`                  | No       |                     | Linked user.                                 |
+| is_primary    | `BOOLEAN`                  | No       | false               | Marks the address as the user's primary.     |
+| first_name    | `TEXT`                     | No       |                     |                                              |
+| last_name     | `TEXT`                     | No       |                     |                                              |
+| address_line1 | `TEXT`                     | No       |                     | First line of address (street, number, etc). |
+| address_line2 | `TEXT`                     | Yes      | `null`              | Second line of address (unit number).        |
+| city          | `TEXT`                     | No       |                     |                                              |
+| zip           | `TEXT`                     | No       |                     | ZIP code.                                    |
+| phone         | `TEXT`                     | No       |                     | Phone number.                                |
+| created_at    | `TIMESTAMP WITH TIME ZONE` | No       | `now()`             | Date of creation for the entity.             |
 
 ## 🎯Purpose
 Stores user address information for a quicker checkout experience.

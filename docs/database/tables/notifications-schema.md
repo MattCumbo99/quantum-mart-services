@@ -16,15 +16,15 @@
 ## 📄Schema
 - Table name: `notifications`
 
-| Column Name  | Datatype                   | Nullable | Default | Description                                       |
-|--------------|----------------------------|----------|---------|---------------------------------------------------|
-| id           | PK `UUID`                  | No       |         | Primary identifier.                               |
-| user_id      | FK `UUID`                  | No       |         | User ID association.                              |
-| message      | `TEXT`                     | No       |         |                                                   |
-| route        | `TEXT`                     | No       |         | URL to navigate when the notification is clicked. |
-| read_at      | `TIMESTAMP WITH TIME ZONE` | Yes      |         | When the notification was read.                   |
-| created_at   | `TIMESTAMP WITH TIME ZONE` | No       | `now()` |                                                   |
-| deleted_at   | `TIMESTAMP WITH TIME ZONE` | Yes      |         | When the user hid the notification.               |
+| Column Name  | Datatype                   | Nullable | Default             | Description                                       |
+|--------------|----------------------------|----------|---------------------|---------------------------------------------------|
+| id           | PK `UUID`                  | No       | `gen_random_uuid()` | Primary identifier.                               |
+| user_id      | FK `UUID`                  | No       |                     | User ID association.                              |
+| message      | `TEXT`                     | No       |                     |                                                   |
+| route        | `TEXT`                     | No       |                     | URL to navigate when the notification is clicked. |
+| read_at      | `TIMESTAMP WITH TIME ZONE` | Yes      |                     | When the notification was read.                   |
+| created_at   | `TIMESTAMP WITH TIME ZONE` | No       | `now()`             |                                                   |
+| deleted_at   | `TIMESTAMP WITH TIME ZONE` | Yes      |                     | When the user hid the notification.               |
 
 ## 🎯Purpose
 Stores messages notifying users of a flow change related to orders, purchases, sales, anything that requires attention.
