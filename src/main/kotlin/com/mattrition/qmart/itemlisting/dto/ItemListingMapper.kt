@@ -24,6 +24,8 @@ object ItemListingMapper : EntityMapper<ItemListing, ItemListingDto> {
         updatedAt = entity.updatedAt,
         isActive = entity.isActive,
         quantitySold = entity.quantitySold,
+        averageScore = entity.averageScore,
+        reviewCount = entity.reviewCount,
     )
 
     @Deprecated(
