@@ -23,10 +23,10 @@ class ItemListingController(
 ) {
     @GetMapping fun getItemListings(): List<ItemListingDto> = service.getAllListings()
 
-    @GetMapping("/seller/{sellerUsername}")
+    @GetMapping("/seller/{sellerId}")
     fun getItemListingsByUsername(
-        @PathVariable sellerUsername: String,
-    ): List<ItemListingDto> = service.getListingsByUsername(sellerUsername)
+        @PathVariable sellerId: UUID,
+    ): List<ItemListingDto> = service.getListingsByUserId(sellerId)
 
     @GetMapping("/{listingId}")
     fun getItemListing(

@@ -45,17 +45,18 @@ class ItemListingService(
     }
 
     /**
-     * Retrieves every listing being sold by a user matching [username]. Casing is ignored.
+     * Retrieves every listing being sold by a user matching [userId].
      *
      * @throws NotFoundException If the user does not exist.
      */
-    fun getListingsByUsername(username: String): List<ItemListingDto> {
-        val userId =
-            userRepo.findByUsernameIgnoreCase(username)?.id
-                ?: throw NotFoundException("Username does not exist: $username")
+    fun getListingsByUserId(userId: UUID): List<ItemListingDto> {
+        val user =
+            userRepo.findById(userId).getOrElse {
+                throw NotFoundException("User with ID $userId not found.")
+            }
 
         return itemListingRepo.findItemListingsBySellerId(userId).map {
-            ItemListingMapper.toDto(it, username)
+            ItemListingMapper.toDto(it, user.username)
         }
     }
 

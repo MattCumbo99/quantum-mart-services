@@ -82,11 +82,9 @@ class ItemListingControllerTest : BaseH2Test() {
     @Nested
     inner class GetItemListing {
         @Test
-        fun `should get items by username`() {
-            mockRequest(
-                requestType = GET,
-                path = "$BASE_PATH/seller/${TestUsers.moderator.username}",
-            ).andExpect(status().isOk)
+        fun `should get items by user id`() {
+            mockRequest(requestType = GET, path = "$BASE_PATH/seller/${TestUsers.moderator.id}")
+                .andExpect(status().isOk)
                 .andExpect(jsonPath("$[0].sellerUsername").value(TestUsers.moderator.username))
         }
 
