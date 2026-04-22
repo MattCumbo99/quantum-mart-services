@@ -21,7 +21,8 @@ class Order(
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(nullable = false)
     var id: UUID? = null,
-    @Column(name = "buyer_id", nullable = false) var buyerId: UUID,
+    @Column(name = "buyer_id") var buyerId: UUID? = null,
+    @Column(name = "guest_email") var guestEmail: String? = null,
     var status: String = OrderStatus.PENDING,
     @Column(name = "total_paid", nullable = false) var totalPaid: BigDecimal = BigDecimal.ZERO,
     @Column(name = "created_at", nullable = false)

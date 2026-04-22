@@ -1,7 +1,7 @@
 package com.mattrition.qmart.cart
 
+import com.mattrition.qmart.cart.dto.AddCartItemDto
 import com.mattrition.qmart.cart.dto.CartItemWithListingDto
-import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -23,12 +23,15 @@ class CartItemController(
         @PathVariable userId: UUID,
     ): List<CartItemWithListingDto> = cartService.getCartItemsByUserId(userId)
 
-    @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
-    @PostMapping("/user/{userId}")
+    @GetMapping("/guest/{guestSessionId}")
+    fun getGuestCartItems(
+        @PathVariable guestSessionId: UUID,
+    ): List<CartItemWithListingDto> = cartService.getCartItemsByGuestId(guestSessionId)
+
+    @PostMapping
     fun addItemToCart(
-        @PathVariable userId: UUID,
-        @RequestBody listing: ItemListingDto,
-    ): CartItemWithListingDto = cartService.addItemToCart(userId, listing, itemQuantity = 1)
+        @RequestBody addItemReq: AddCartItemDto,
+    ): CartItemWithListingDto = cartService.addItemToCart(addItemReq)
 
     @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @DeleteMapping("/user/{userId}")
@@ -36,10 +39,21 @@ class CartItemController(
         @PathVariable userId: UUID,
     ) = cartService.deleteCartItemsByUserId(userId)
 
+    @DeleteMapping("/guest/{guestSessionId}")
+    fun clearGuestCartItems(
+        @PathVariable guestSessionId: UUID,
+    ) = cartService.deleteGuestCartItems(guestSessionId)
+
     @PreAuthorize("isAuthenticated() && #userId == authentication.principal.id")
     @DeleteMapping("/user/{userId}/listing/{listingId}")
     fun deleteCartItemFromUser(
         @PathVariable userId: UUID,
         @PathVariable listingId: UUID,
     ) = cartService.deleteCartItemFromUser(userId, listingId)
+
+    @DeleteMapping("/guest/{guestSessionId}/listing/{listingId}")
+    fun deleteCartItemFromGuest(
+        @PathVariable guestSessionId: UUID,
+        @PathVariable listingId: UUID,
+    ) = cartService.deleteGuestCartItem(guestSessionId, listingId)
 }

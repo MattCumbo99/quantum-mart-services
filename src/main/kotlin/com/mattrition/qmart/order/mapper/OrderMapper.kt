@@ -1,15 +1,16 @@
 package com.mattrition.qmart.order.mapper
 
 import com.mattrition.qmart.order.Order
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
-import com.mattrition.qmart.util.EntityMapper
 
-object OrderMapper : EntityMapper<Order, OrderDto> {
-    override fun toDto(entity: Order) =
+object OrderMapper {
+    fun toDto(entity: Order) =
         OrderDto(
             id = entity.id!!,
             buyerId = entity.buyerId,
+            guestEmail = entity.guestEmail,
             status = entity.status,
             totalPaid = entity.totalPaid,
             createdAt = entity.createdAt,
@@ -24,9 +25,10 @@ object OrderMapper : EntityMapper<Order, OrderDto> {
             orderItems = entity.orderItems.map { OrderItemMapper.toDto(it) },
         )
 
-    override fun asNewEntity(dto: OrderDto) =
+    fun asNewEntity(dto: CreateOrderRequestDto) =
         Order(
             buyerId = dto.buyerId,
+            guestEmail = dto.guestEmail,
             totalPaid = dto.totalPaid,
             shippingFirstname = dto.shippingFirstname,
             shippingLastname = dto.shippingLastname,

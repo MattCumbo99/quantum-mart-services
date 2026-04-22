@@ -1,11 +1,13 @@
 package com.mattrition.qmart.order
 
 import com.mattrition.qmart.cart.CartItemService
+import com.mattrition.qmart.cart.dto.CartItemWithListingDto
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.notification.NotificationService
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.order.mapper.OrderMapper
 import com.mattrition.qmart.orderitem.OrderItemRepository
@@ -77,12 +79,16 @@ class OrderService(
      * @throws ForbiddenException If the buyer doesn't have enough money to make the order.
      */
     @Transactional
-    fun createOrder(orderInfo: OrderDto): OrderDto {
-        val cartItems = cartItemService.getCartItemsByUserId(orderInfo.buyerId)
+    fun createOrder(orderInfo: CreateOrderRequestDto): OrderDto {
+        ensureEitherUserOrGuest(orderInfo)
+
+        val cartItems = retrieveCartItems(orderInfo)
         cartItems.ifEmpty { throw BadRequestException("Order has no items!") }
 
-        // Take the users money
-        balanceService.deductBalance(orderInfo.buyerId, orderInfo.totalPaid)
+        // Take the user's money. Guests do not have to pay!
+        orderInfo.buyerId?.let { buyerId ->
+            balanceService.deductBalance(buyerId, orderInfo.totalPaid)
+        }
 
         val orderEntity = OrderMapper.asNewEntity(orderInfo)
 
@@ -100,10 +106,34 @@ class OrderService(
 
         val savedOrder = orderRepository.save(orderEntity)
 
+        // Clear guest cart
+        orderInfo.guestSessionId?.let { guestSessionId ->
+            cartItemService.deleteGuestCartItems(guestSessionId)
+        }
+
         // Clear the users cart
-        cartItemService.deleteCartItemsByUserId(orderInfo.buyerId)
+        orderInfo.buyerId?.let { buyerId -> cartItemService.deleteCartItemsByUserId(buyerId) }
 
         return OrderMapper.toDto(savedOrder)
+    }
+
+    private fun retrieveCartItems(orderInfo: CreateOrderRequestDto): List<CartItemWithListingDto> {
+        // Guest routine
+        orderInfo.guestSessionId?.let { guestId ->
+            return cartItemService.getCartItemsByGuestId(guestId)
+        }
+
+        return cartItemService.getCartItemsByUserId(orderInfo.buyerId!!)
+    }
+
+    /** Forces order info to have only either buyer ID or guest session ID as null. */
+    private fun ensureEitherUserOrGuest(orderInfo: CreateOrderRequestDto) {
+        val bothFilled = orderInfo.buyerId != null && orderInfo.guestSessionId != null
+        val neitherFilled = orderInfo.buyerId == null && orderInfo.guestSessionId == null
+
+        if (bothFilled || neitherFilled) {
+            throw BadRequestException("User and guest identity must not conflict.")
+        }
     }
 
     /** Sends a notification to the seller telling them their item was sold. */

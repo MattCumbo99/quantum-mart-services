@@ -7,7 +7,8 @@ import java.util.UUID
 
 data class OrderDto(
     val id: UUID? = null,
-    val buyerId: UUID,
+    val buyerId: UUID? = null,
+    val guestEmail: String? = null,
     val status: String,
     val totalPaid: BigDecimal,
     val createdAt: OffsetDateTime = OffsetDateTime.now(),

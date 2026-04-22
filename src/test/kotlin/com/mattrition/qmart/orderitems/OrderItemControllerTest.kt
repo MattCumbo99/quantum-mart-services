@@ -6,6 +6,7 @@ import com.mattrition.qmart.cart.CartItemRepository
 import com.mattrition.qmart.cart.dto.CartItemWithListingDto
 import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.order.OrderService
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.OrderItemStatus
@@ -51,27 +52,41 @@ class OrderItemControllerTest : BaseH2Test() {
             )
 
         // Create an order request for the moderator
-        order =
-            orderService.createOrder(
-                super.orderWithAddress(
-                    buyerId = TestUsers.user.id!!,
-                    totalPaid = BigDecimal(100),
-                    orderItems =
-                        listOf(
-                            OrderItemMapper.fromCartItemDto(
-                                CartItemWithListingDto(
-                                    cartItemId = cartItem.id!!,
-                                    quantity = cartItem.quantity,
-                                    itemListing =
-                                        ItemListingMapper.toDto(
-                                            listings.first(),
-                                            TestUsers.moderator.username,
-                                        ),
-                                ),
-                            ),
-                        ),
+        val itemListing = ItemListingMapper.toDto(listings.first(), TestUsers.moderator.username)
+
+        val orderItemDto =
+            OrderItemMapper.fromCartItemDto(
+                CartItemWithListingDto(
+                    cartItemId = cartItem.id!!,
+                    quantity = cartItem.quantity,
+                    itemListing = itemListing,
                 ),
             )
+
+        val addressOrder =
+            super.orderWithAddress(
+                buyerId = TestUsers.user.id!!,
+                totalPaid = BigDecimal(100),
+                orderItems = listOf(orderItemDto),
+            )
+
+        val createReq =
+            CreateOrderRequestDto(
+                buyerId = addressOrder.buyerId,
+                guestSessionId = null,
+                guestEmail = null,
+                totalPaid = addressOrder.totalPaid,
+                shippingFirstname = addressOrder.shippingFirstname,
+                shippingLastname = addressOrder.shippingLastname,
+                shippingAddress1 = addressOrder.shippingAddress1,
+                shippingAddress2 = addressOrder.shippingAddress2,
+                shippingCity = addressOrder.shippingCity,
+                shippingState = addressOrder.shippingState,
+                shippingZip = addressOrder.shippingZip,
+                shippingPhone = addressOrder.shippingPhone,
+            )
+
+        order = orderService.createOrder(createReq)
     }
 
     @Nested

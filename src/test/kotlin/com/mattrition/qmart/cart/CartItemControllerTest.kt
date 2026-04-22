@@ -1,6 +1,7 @@
 package com.mattrition.qmart.cart
 
 import com.mattrition.qmart.BaseH2Test
+import com.mattrition.qmart.cart.dto.AddCartItemDto
 import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
@@ -55,23 +56,35 @@ class CartItemControllerTest : BaseH2Test() {
     inner class AddItem {
         @Test
         fun `adding item to other cart returns forbidden 403`() {
-            mockRequest(
-                requestType = POST,
-                path = "$BASE_PATH/user/${TestUsers.user.id}",
-                token = TestTokens.admin,
-                body = listing1Dto,
-            ).andExpect(status().isForbidden)
+            val req =
+                AddCartItemDto(
+                    userId = TestUsers.user.id!!,
+                    guestSessionId = null,
+                    listingInfo = listing1Dto,
+                    itemQuantity = 1,
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = TestTokens.admin, body = req)
+                .andExpect(status().isForbidden)
         }
 
         @Test
         fun `should add item to cart`() {
             cartItemRepository.findCartItemsByUserId(TestUsers.superadmin.id!!).size shouldBe 0
 
+            val req =
+                AddCartItemDto(
+                    userId = TestUsers.superadmin.id!!,
+                    guestSessionId = null,
+                    listingInfo = listing1Dto,
+                    itemQuantity = 1,
+                )
+
             mockRequest(
                 requestType = POST,
-                path = "$BASE_PATH/user/${TestUsers.superadmin.id}",
+                path = BASE_PATH,
                 token = TestTokens.superadmin,
-                body = listing1Dto,
+                body = req,
             ).andExpect(status().isOk)
 
             val userItems = cartItemRepository.findCartItemsByUserId(TestUsers.superadmin.id!!)
@@ -86,12 +99,16 @@ class CartItemControllerTest : BaseH2Test() {
             listingSellerId shouldBeEqual TestUsers.admin.id!!
             listing1Dto.sellerId shouldBeEqual TestUsers.admin.id!!
 
-            mockRequest(
-                requestType = POST,
-                path = "$BASE_PATH/user/${TestUsers.admin.id}",
-                token = TestTokens.admin,
-                body = listing1Dto,
-            ).andExpect(status().isForbidden)
+            val req =
+                AddCartItemDto(
+                    userId = listingSellerId,
+                    guestSessionId = null,
+                    listingInfo = listing1Dto,
+                    itemQuantity = 1,
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = TestTokens.admin, body = req)
+                .andExpect(status().isForbidden)
         }
     }
 

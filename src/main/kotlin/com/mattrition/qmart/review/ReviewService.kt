@@ -45,7 +45,7 @@ class ReviewService(
                 throw NotFoundException("Listing $listingId not found.")
             }
 
-        val authUser = authPrincipal()
+        val authUser = authPrincipal()!!
 
         enforceCreationRules(authUser, request, listing)
 
@@ -90,7 +90,7 @@ class ReviewService(
                 throw NotFoundException("Review $reviewId not found.")
             }
 
-        val authUser = authPrincipal()
+        val authUser = authPrincipal()!!
         if (review.user.id != authUser.id) {
             throw ForbiddenException("Forbidden.")
         }
@@ -136,7 +136,7 @@ class ReviewService(
                 throw NotFoundException("Review $reviewId not found.")
             }
 
-        val authUser = authPrincipal()
+        val authUser = authPrincipal()!!
         if (review.user.id != authUser.id) {
             throw ForbiddenException("Forbidden.")
         }

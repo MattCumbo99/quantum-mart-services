@@ -1,5 +1,6 @@
 package com.mattrition.qmart.order
 
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.user.UserRole
 import jakarta.annotation.security.RolesAllowed
@@ -40,11 +41,11 @@ class OrderController(
     ): List<OrderDto> = orderService.getOrdersForSeller(sellerId, unfinished)
 
     @PostMapping
-    @PreAuthorize("isAuthenticated() && #orderInfo.buyerId == authentication.principal.id")
+    @PreAuthorize("isAuthenticated() && #orderReq.buyerId == authentication.principal.id")
     fun createOrder(
-        @RequestBody orderInfo: OrderDto,
+        @RequestBody orderReq: CreateOrderRequestDto,
     ): ResponseEntity<OrderDto> {
-        val orderWithItems = orderService.createOrder(orderInfo)
+        val orderWithItems = orderService.createOrder(orderReq)
 
         return ResponseEntity(orderWithItems, HttpStatus.CREATED)
     }
