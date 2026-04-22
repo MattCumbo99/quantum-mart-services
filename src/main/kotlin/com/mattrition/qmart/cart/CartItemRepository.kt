@@ -11,7 +11,7 @@ interface CartItemRepository : JpaRepository<CartItem, UUID> {
     @Query(
         """
             SELECT ci FROM CartItem ci
-            WHERE ci.guestSessionId = :guestSessionId
+            WHERE ci.guestSessionId = :guestId
         """,
     )
     fun findGuestCartItems(guestId: UUID): List<CartItem>

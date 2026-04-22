@@ -131,7 +131,7 @@ class CartItemService(
         }
 
         itemInfo.userId?.let { userId ->
-            // User is adding it to their own cart
+            // User is not adding it to their own cart
             val authUser = authPrincipal()
             if (authUser == null || authUser.id != userId) {
                 throw ForbiddenException("Forbidden.")
