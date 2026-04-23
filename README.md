@@ -75,4 +75,4 @@ All existing and newly implemented changes to the API should be tested using moc
 using `gradle test`. Note that you will not be able to merge in your changes if any test fails.
 
 ## Roadmap
-You can see what is being planned / developed on the current project board: https://github.com/users/MattCumbo99/projects/6/views/1
+You can see what is being planned / developed on the current project board: https://github.com/MattCumbo99/quantum-mart-services/projects?query=is%3Aopen

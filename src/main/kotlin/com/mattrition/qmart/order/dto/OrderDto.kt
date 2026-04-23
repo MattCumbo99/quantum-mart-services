@@ -6,19 +6,19 @@ import java.time.OffsetDateTime
 import java.util.UUID
 
 data class OrderDto(
-    val id: UUID? = null,
-    val buyerId: UUID? = null,
-    val guestEmail: String? = null,
+    val id: UUID,
+    val buyerId: UUID?,
+    val guestEmail: String?,
     val status: String,
     val totalPaid: BigDecimal,
-    val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    val createdAt: OffsetDateTime,
     val shippingFirstname: String,
     val shippingLastname: String,
     val shippingAddress1: String,
-    val shippingAddress2: String? = null,
+    val shippingAddress2: String?,
     val shippingCity: String,
     val shippingState: String,
     val shippingZip: String,
     val shippingPhone: String,
-    val orderItems: List<OrderItemDto> = emptyList(),
+    val orderItems: List<OrderItemDto>,
 )

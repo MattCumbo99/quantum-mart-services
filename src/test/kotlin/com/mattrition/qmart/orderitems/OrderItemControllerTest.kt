@@ -3,14 +3,11 @@ package com.mattrition.qmart.orderitems
 import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.cart.CartItem
 import com.mattrition.qmart.cart.CartItemRepository
-import com.mattrition.qmart.cart.dto.CartItemWithListingDto
-import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.order.OrderService
 import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.OrderItemStatus
-import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
 import io.kotest.matchers.comparables.shouldBeLessThanOrEqualTo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -43,47 +40,23 @@ class OrderItemControllerTest : BaseH2Test() {
         val listings = super.initListings()
 
         val cartItem =
-            cartItemRepository.save(
-                CartItem(
-                    userId = TestUsers.user.id!!,
-                    listingId = listings.first().id!!,
-                    quantity = 1,
-                ),
-            )
-
-        // Create an order request for the moderator
-        val itemListing = ItemListingMapper.toDto(listings.first(), TestUsers.moderator.username)
-
-        val orderItemDto =
-            OrderItemMapper.fromCartItemDto(
-                CartItemWithListingDto(
-                    cartItemId = cartItem.id!!,
-                    quantity = cartItem.quantity,
-                    itemListing = itemListing,
-                ),
-            )
-
-        val addressOrder =
-            super.orderWithAddress(
-                buyerId = TestUsers.user.id!!,
-                totalPaid = BigDecimal(100),
-                orderItems = listOf(orderItemDto),
-            )
+            CartItem(userId = TestUsers.user.id!!, listingId = listings.first().id!!, quantity = 1)
+        cartItemRepository.save(cartItem)
 
         val createReq =
             CreateOrderRequestDto(
-                buyerId = addressOrder.buyerId,
+                buyerId = TestUsers.user.id!!,
                 guestSessionId = null,
                 guestEmail = null,
-                totalPaid = addressOrder.totalPaid,
-                shippingFirstname = addressOrder.shippingFirstname,
-                shippingLastname = addressOrder.shippingLastname,
-                shippingAddress1 = addressOrder.shippingAddress1,
-                shippingAddress2 = addressOrder.shippingAddress2,
-                shippingCity = addressOrder.shippingCity,
-                shippingState = addressOrder.shippingState,
-                shippingZip = addressOrder.shippingZip,
-                shippingPhone = addressOrder.shippingPhone,
+                totalPaid = BigDecimal(100),
+                shippingFirstname = "Test1",
+                shippingLastname = "Test2",
+                shippingAddress1 = "1234 Main St",
+                shippingAddress2 = null,
+                shippingCity = "London",
+                shippingState = "California",
+                shippingZip = "11111",
+                shippingPhone = "555-555-5555",
             )
 
         order = orderService.createOrder(createReq)
