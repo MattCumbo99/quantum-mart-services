@@ -4,7 +4,6 @@ import com.mattrition.qmart.cart.CartItemService
 import com.mattrition.qmart.cart.dto.CartItemWithListingDto
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
-import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.notification.NotificationService
 import com.mattrition.qmart.order.dto.CreateOrderRequestDto
@@ -13,7 +12,6 @@ import com.mattrition.qmart.order.mapper.OrderMapper
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
 import com.mattrition.qmart.user.BalanceService
-import com.mattrition.qmart.user.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
@@ -22,26 +20,12 @@ import java.util.UUID
 class OrderService(
     private val orderRepository: OrderRepository,
     private val orderItemRepository: OrderItemRepository,
-    private val userRepository: UserRepository,
     private val cartItemService: CartItemService,
     private val balanceService: BalanceService,
     private val notificationService: NotificationService,
 ) {
     /** Retrieves all orders bought by a specified user. */
     fun getOrdersBoughtBy(buyerId: UUID): List<OrderDto> = orderRepository.findOrdersByBuyerId(buyerId).map { OrderMapper.toDto(it) }
-
-    /**
-     * Retrieves all orders bought by a user via username.
-     *
-     * @throws NotFoundException If the username does not exist.
-     */
-    fun getOrdersBoughtBy(username: String): List<OrderDto> {
-        val user =
-            userRepository.findByUsernameIgnoreCase(username)
-                ?: throw NotFoundException("User $username not found")
-
-        return getOrdersBoughtBy(user.id!!)
-    }
 
     /**
      * Retrieves all orders with only order items associated by the seller.
