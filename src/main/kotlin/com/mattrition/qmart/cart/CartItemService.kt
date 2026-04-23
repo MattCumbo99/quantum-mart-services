@@ -83,7 +83,7 @@ class CartItemService(
             val newCartItem = cartItemRepo.save(item)
 
             CartItemWithListingDto(
-                cartItemId = newCartItem.id!!,
+                id = newCartItem.id!!,
                 quantity = item.quantity,
                 itemListing = itemInfo.listingInfo,
             )
@@ -106,7 +106,7 @@ class CartItemService(
                 val savedCartItem = cartItemRepo.save(itemEntity)
 
                 CartItemWithListingDto(
-                    cartItemId = savedCartItem.id!!,
+                    id = savedCartItem.id!!,
                     quantity = savedCartItem.quantity,
                     itemListing = itemInfo.listingInfo,
                 )
@@ -161,7 +161,7 @@ class CartItemService(
             val sellerUsername = userRepo.findById(listing.sellerId).get().username
 
             CartItemWithListingDto(
-                cartItemId = cartItem.id!!,
+                id = cartItem.id!!,
                 quantity = cartItem.quantity,
                 itemListing = ItemListingMapper.toDto(listing, sellerUsername),
             )
