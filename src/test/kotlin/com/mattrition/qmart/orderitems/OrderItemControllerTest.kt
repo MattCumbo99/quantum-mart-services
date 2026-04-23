@@ -59,6 +59,8 @@ class OrderItemControllerTest : BaseH2Test() {
                 shippingPhone = "555-555-5555",
             )
 
+        authenticate(TestUsers.user)
+
         order = orderService.createOrder(createReq)
     }
 
@@ -68,9 +70,9 @@ class OrderItemControllerTest : BaseH2Test() {
         fun `non-seller patching order item should return 403 forbidden`() {
             mockRequest(
                 requestType = PATCH,
-                path =
-                    "$BASE_PATH/${order.orderItems.first().id!!}?newStatus=${OrderItemStatus.SHIPPED}",
+                path = "$BASE_PATH/${order.orderItems.first().id!!}",
                 token = TestTokens.user,
+                params = mapOf("newStatus" to OrderItemStatus.SHIPPED.toString()),
             ).andExpect(status().isForbidden)
         }
 
