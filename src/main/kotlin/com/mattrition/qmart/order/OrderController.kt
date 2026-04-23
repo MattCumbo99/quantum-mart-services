@@ -35,7 +35,6 @@ class OrderController(
     ): List<OrderDto> = orderService.getOrdersForSeller(sellerId, unfinished)
 
     @PostMapping
-    @PreAuthorize("isAuthenticated() && #orderReq.buyerId == authentication.principal.id")
     fun createOrder(
         @RequestBody orderReq: CreateOrderRequestDto,
     ): ResponseEntity<OrderDto> {

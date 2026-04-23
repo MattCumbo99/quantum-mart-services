@@ -1,5 +1,6 @@
 package com.mattrition.qmart
 
+import com.mattrition.qmart.auth.CustomUserDetails
 import com.mattrition.qmart.auth.JwtService
 import com.mattrition.qmart.config.SecurityConfig
 import com.mattrition.qmart.itemlisting.ItemListing
@@ -16,6 +17,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -192,5 +195,23 @@ abstract class BaseH2Test {
         params.forEach { (k, v) -> builder.param(k, v) }
 
         return mockMvc.perform(builder)
+    }
+
+    /**
+     * Inserts authentication information into the application. Useful for getting past certain
+     * service rules.
+     *
+     * @param user User to authenticate with.
+     */
+    protected fun authenticate(user: User) {
+        val principal = CustomUserDetails(user)
+        val auth = UsernamePasswordAuthenticationToken(principal, null, principal.authorities)
+
+        SecurityContextHolder.getContext().authentication = auth
+    }
+
+    /** Removes authentication information to simulate a non-user using the app. */
+    protected fun clearAuth() {
+        SecurityContextHolder.clearContext()
     }
 }

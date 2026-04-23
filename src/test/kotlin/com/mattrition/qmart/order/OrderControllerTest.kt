@@ -12,6 +12,8 @@ import io.kotest.inspectors.forAll
 import io.kotest.inspectors.forOne
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
+import io.kotest.matchers.nulls.shouldBeNull
+import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -50,7 +52,7 @@ class OrderControllerTest : BaseH2Test() {
         buyerId: UUID? = null,
         guestSessionId: UUID? = null,
         guestEmail: String? = null,
-        totalPaid: BigDecimal = BigDecimal.ZERO,
+        totalPaid: BigDecimal = BigDecimal("1.00"),
     ) = CreateOrderRequestDto(
         buyerId = buyerId,
         guestSessionId = guestSessionId,
@@ -105,8 +107,87 @@ class OrderControllerTest : BaseH2Test() {
                 body = req,
             ).andExpect(status().isForbidden)
 
+            // Non-authenticated request
             mockRequest(requestType = POST, path = BASE_PATH, token = null, body = req)
                 .andExpect(status().isForbidden)
+        }
+
+        @Test
+        fun `should create order for user`() {
+            val req = genCreateOrder(buyerId = TestUsers.user.id!!)
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = TestTokens.user, body = req)
+                .andExpect(status().isCreated)
+        }
+
+        @Test
+        fun `should create order for non-user`() {
+            val req =
+                genCreateOrder(
+                    buyerId = null,
+                    guestSessionId = guestId,
+                    guestEmail = "test@email.com",
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = req)
+                .andExpect(status().isCreated)
+        }
+
+        @Test
+        fun `should return 400 bad request with conflicting ownership`() {
+            val noOwnerReq =
+                genCreateOrder(
+                    buyerId = null,
+                    guestSessionId = null,
+                    guestEmail = "test@email.com", // should not matter
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = noOwnerReq)
+                .andExpect(status().isBadRequest)
+
+            val bothOwnerReq =
+                genCreateOrder(
+                    buyerId = TestUsers.user.id!!,
+                    guestSessionId = guestId,
+                    guestEmail = "test@email.com", // should not matter
+                )
+
+            mockRequest(
+                requestType = POST,
+                path = BASE_PATH,
+                token = TestTokens.user,
+                body = bothOwnerReq,
+            ).andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should return 400 bad request with non-user origin without guest email`() {
+            val req = genCreateOrder(buyerId = null, guestSessionId = guestId, guestEmail = null)
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = req)
+                .andExpect(status().isBadRequest)
+        }
+
+        @Test
+        fun `should return 400 bad request on invalid total paid values`() {
+            val invalidValues = listOf(BigDecimal("-1.0"), BigDecimal("-9999.0"), BigDecimal("0.0"))
+
+            invalidValues.forEach { value ->
+                val req =
+                    genCreateOrder(
+                        buyerId = TestUsers.user.id!!,
+                        guestSessionId = null,
+                        guestEmail = null,
+                        totalPaid = value,
+                    )
+
+                mockRequest(
+                    requestType = POST,
+                    path = BASE_PATH,
+                    token = TestTokens.user,
+                    body = req,
+                ).andExpect(status().isBadRequest)
+            }
         }
 
         @Nested
@@ -194,12 +275,21 @@ class OrderControllerTest : BaseH2Test() {
     inner class GetOrders {
         @BeforeEach
         fun init() {
-            val userRequest = genCreateOrder(buyerId = TestUsers.user.id!!)
+            val userRequest =
+                genCreateOrder(
+                    buyerId = TestUsers.user.id!!,
+                    guestSessionId = null,
+                    guestEmail = null,
+                )
+
+            authenticate(TestUsers.user)
 
             orderService.createOrder(userRequest)
 
             val guestRequest =
                 genCreateOrder(guestSessionId = guestId, guestEmail = "email@test.com")
+
+            clearAuth()
 
             orderService.createOrder(guestRequest)
         }
@@ -229,6 +319,19 @@ class OrderControllerTest : BaseH2Test() {
             val orders = objectMapper.readValue<List<OrderDto>>(body)
             orders shouldHaveSize 2
 
+            // Verify order from user
+            orders.forOne { o ->
+                o.buyerId.shouldNotBeNull() shouldBe TestUsers.user.id!!
+                o.guestEmail.shouldBeNull()
+            }
+
+            // Verify order from guest
+            orders.forOne { o ->
+                o.buyerId.shouldBeNull()
+                o.guestEmail.shouldNotBeNull()
+            }
+
+            // Verify all order items are only for the seller
             orders.forEach { order ->
                 order.orderItems.forAll { it.sellerId shouldBe TestUsers.moderator.id }
             }

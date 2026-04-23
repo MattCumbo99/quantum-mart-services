@@ -12,8 +12,10 @@ import com.mattrition.qmart.order.mapper.OrderMapper
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
 import com.mattrition.qmart.user.BalanceService
+import com.mattrition.qmart.util.authPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.util.UUID
 
 @Service
@@ -64,7 +66,7 @@ class OrderService(
      */
     @Transactional
     fun createOrder(orderInfo: CreateOrderRequestDto): OrderDto {
-        ensureEitherUserOrGuest(orderInfo)
+        enforceCreationRules(orderInfo)
 
         val cartItems = retrieveCartItems(orderInfo)
         cartItems.ifEmpty { throw BadRequestException("Order has no items!") }
@@ -110,13 +112,30 @@ class OrderService(
         return cartItemService.getCartItemsByUserId(orderInfo.buyerId!!)
     }
 
-    /** Forces order info to have only either buyer ID or guest session ID as null. */
-    private fun ensureEitherUserOrGuest(orderInfo: CreateOrderRequestDto) {
-        val bothFilled = orderInfo.buyerId != null && orderInfo.guestSessionId != null
-        val neitherFilled = orderInfo.buyerId == null && orderInfo.guestSessionId == null
+    /** Runs a group of rules that must pass to allow order creation. */
+    private fun enforceCreationRules(orderInfo: CreateOrderRequestDto) {
+        val twoOwners = orderInfo.buyerId != null && orderInfo.guestSessionId != null
+        val noOwner = orderInfo.buyerId == null && orderInfo.guestSessionId == null
 
-        if (bothFilled || neitherFilled) {
+        // Ownership must not conflict between guest and user
+        if (twoOwners || noOwner) {
             throw BadRequestException("User and guest identity must not conflict.")
+        }
+
+        // Buyer ID must match authentication
+        val authUser = authPrincipal()
+        if (orderInfo.buyerId != null && (authUser == null || authUser.id != orderInfo.buyerId)) {
+            throw ForbiddenException("Forbidden.")
+        }
+
+        // Non-user requests must provide guest email
+        if (orderInfo.guestSessionId != null && orderInfo.guestEmail == null) {
+            throw BadRequestException("Guest orders must provide email.")
+        }
+
+        // Total paid must be greater than 0
+        if (orderInfo.totalPaid <= BigDecimal.ZERO) {
+            throw BadRequestException("Total paid must be greater than 0.")
         }
     }
 
