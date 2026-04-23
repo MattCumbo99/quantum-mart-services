@@ -8,7 +8,7 @@ import java.util.UUID
  * in order to retrieve listing information from a cart item listing ID.
  */
 data class CartItemWithListingDto(
-    val cartItemId: UUID,
+    val id: UUID,
     val quantity: Int,
     val itemListing: ItemListingDto,
 )
