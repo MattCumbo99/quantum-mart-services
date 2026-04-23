@@ -9,6 +9,7 @@ import io.kotest.inspectors.forNone
 import io.kotest.inspectors.forOne
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.comparables.shouldBeGreaterThan
 import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.nulls.shouldBeNull
@@ -196,8 +197,10 @@ class CartItemControllerTest : BaseH2Test() {
 
             val guestItems = cartItemRepository.findGuestCartItems(guestId)
             guestItems shouldHaveSize 1
-            guestItems.first().quantity shouldBe
-                2 // Added 1 of the same item, increment the quantity
+
+            val guestItem = guestItems.first()
+            guestItem.quantity shouldBe 2
+            guestItem.updatedAt shouldBeGreaterThan guestItem.createdAt
         }
     }
 

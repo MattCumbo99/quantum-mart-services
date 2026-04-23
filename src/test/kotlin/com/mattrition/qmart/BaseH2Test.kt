@@ -162,12 +162,14 @@ abstract class BaseH2Test {
      * @param path URI of the controller.
      * @param token Which [TestTokens] to use for this call, or `null` if non-user.
      * @param body Data body in the request for `POST` calls.
+     * @param params Parameters to add to the request.
      */
     protected fun mockRequest(
         requestType: HttpMethod,
         path: String,
         token: String? = null,
         body: Any? = null,
+        params: Map<String, String> = emptyMap(),
     ): ResultActions {
         val builder =
             when (requestType) {
@@ -190,6 +192,8 @@ abstract class BaseH2Test {
         if (token != null) {
             builder.header(HttpHeaders.AUTHORIZATION, "Bearer $token")
         }
+
+        params.forEach { (k, v) -> builder.param(k, v) }
 
         return mockMvc.perform(builder)
     }

@@ -21,7 +21,7 @@ import java.util.UUID
 class OrderController(
     private val orderService: OrderService,
 ) {
-    @GetMapping("/userId/{userId}")
+    @GetMapping("/user/{userId}")
     @RolesAllowed(UserRole.USER)
     fun getBuyerOrders(
         @PathVariable userId: UUID,
@@ -33,7 +33,7 @@ class OrderController(
         @PathVariable username: String,
     ): List<OrderDto> = orderService.getOrdersBoughtBy(username)
 
-    @GetMapping("/sellerId/{sellerId}")
+    @GetMapping("/seller/{sellerId}")
     @PreAuthorize("isAuthenticated() && #sellerId == authentication.principal.id")
     fun getRelevantOrdersToSeller(
         @PathVariable sellerId: UUID,
