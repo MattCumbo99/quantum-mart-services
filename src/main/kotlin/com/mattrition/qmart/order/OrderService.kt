@@ -133,6 +133,11 @@ class OrderService(
             throw BadRequestException("Guest orders must provide email.")
         }
 
+        // Guest email should not be provided if from regular user
+        if (orderInfo.buyerId != null && orderInfo.guestEmail != null) {
+            throw BadRequestException("Guest email field should be null for users.")
+        }
+
         // Total paid must be greater than 0
         if (orderInfo.totalPaid <= BigDecimal.ZERO) {
             throw BadRequestException("Total paid must be greater than 0.")

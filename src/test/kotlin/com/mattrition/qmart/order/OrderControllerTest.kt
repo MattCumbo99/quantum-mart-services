@@ -190,6 +190,19 @@ class OrderControllerTest : BaseH2Test() {
             }
         }
 
+        @Test
+        fun `should return 400 bad request when providing guest email as user`() {
+            val req =
+                genCreateOrder(
+                    buyerId = TestUsers.user.id!!,
+                    guestSessionId = null,
+                    guestEmail = "",
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = TestTokens.user, body = req)
+                .andExpect(status().isBadRequest)
+        }
+
         @Nested
         inner class IntegrityTests {
             private val userRequest =
