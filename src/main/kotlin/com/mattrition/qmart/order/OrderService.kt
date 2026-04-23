@@ -1,45 +1,33 @@
 package com.mattrition.qmart.order
 
 import com.mattrition.qmart.cart.CartItemService
+import com.mattrition.qmart.cart.dto.CartItemWithListingDto
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
-import com.mattrition.qmart.exception.NotFoundException
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.notification.NotificationService
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.order.mapper.OrderMapper
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
 import com.mattrition.qmart.user.BalanceService
-import com.mattrition.qmart.user.UserRepository
+import com.mattrition.qmart.util.authPrincipal
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigDecimal
 import java.util.UUID
 
 @Service
 class OrderService(
     private val orderRepository: OrderRepository,
     private val orderItemRepository: OrderItemRepository,
-    private val userRepository: UserRepository,
     private val cartItemService: CartItemService,
     private val balanceService: BalanceService,
     private val notificationService: NotificationService,
 ) {
     /** Retrieves all orders bought by a specified user. */
     fun getOrdersBoughtBy(buyerId: UUID): List<OrderDto> = orderRepository.findOrdersByBuyerId(buyerId).map { OrderMapper.toDto(it) }
-
-    /**
-     * Retrieves all orders bought by a user via username.
-     *
-     * @throws NotFoundException If the username does not exist.
-     */
-    fun getOrdersBoughtBy(username: String): List<OrderDto> {
-        val user =
-            userRepository.findByUsernameIgnoreCase(username)
-                ?: throw NotFoundException("User $username not found")
-
-        return getOrdersBoughtBy(user.id!!)
-    }
 
     /**
      * Retrieves all orders with only order items associated by the seller.
@@ -77,12 +65,16 @@ class OrderService(
      * @throws ForbiddenException If the buyer doesn't have enough money to make the order.
      */
     @Transactional
-    fun createOrder(orderInfo: OrderDto): OrderDto {
-        val cartItems = cartItemService.getCartItemsByUserId(orderInfo.buyerId)
+    fun createOrder(orderInfo: CreateOrderRequestDto): OrderDto {
+        enforceCreationRules(orderInfo)
+
+        val cartItems = retrieveCartItems(orderInfo)
         cartItems.ifEmpty { throw BadRequestException("Order has no items!") }
 
-        // Take the users money
-        balanceService.deductBalance(orderInfo.buyerId, orderInfo.totalPaid)
+        // Take the user's money. Guests do not have to pay!
+        orderInfo.buyerId?.let { buyerId ->
+            balanceService.deductBalance(buyerId, orderInfo.totalPaid)
+        }
 
         val orderEntity = OrderMapper.asNewEntity(orderInfo)
 
@@ -100,10 +92,51 @@ class OrderService(
 
         val savedOrder = orderRepository.save(orderEntity)
 
+        // Clear guest cart
+        orderInfo.guestSessionId?.let { guestSessionId ->
+            cartItemService.deleteGuestCartItems(guestSessionId)
+        }
+
         // Clear the users cart
-        cartItemService.deleteCartItemsByUserId(orderInfo.buyerId)
+        orderInfo.buyerId?.let { buyerId -> cartItemService.deleteCartItemsByUserId(buyerId) }
 
         return OrderMapper.toDto(savedOrder)
+    }
+
+    private fun retrieveCartItems(orderInfo: CreateOrderRequestDto): List<CartItemWithListingDto> {
+        // Guest routine
+        orderInfo.guestSessionId?.let { guestId ->
+            return cartItemService.getCartItemsByGuestId(guestId)
+        }
+
+        return cartItemService.getCartItemsByUserId(orderInfo.buyerId!!)
+    }
+
+    /** Runs a group of rules that must pass to allow order creation. */
+    private fun enforceCreationRules(orderInfo: CreateOrderRequestDto) {
+        val twoOwners = orderInfo.buyerId != null && orderInfo.guestSessionId != null
+        val noOwner = orderInfo.buyerId == null && orderInfo.guestSessionId == null
+
+        // Ownership must not conflict between guest and user
+        if (twoOwners || noOwner) {
+            throw BadRequestException("User and guest identity must not conflict.")
+        }
+
+        // Buyer ID must match authentication
+        val authUser = authPrincipal()
+        if (orderInfo.buyerId != null && (authUser == null || authUser.id != orderInfo.buyerId)) {
+            throw ForbiddenException("Forbidden.")
+        }
+
+        // Non-user requests must provide guest email
+        if (orderInfo.guestSessionId != null && orderInfo.guestEmail == null) {
+            throw BadRequestException("Guest orders must provide email.")
+        }
+
+        // Total paid must be greater than 0
+        if (orderInfo.totalPaid <= BigDecimal.ZERO) {
+            throw BadRequestException("Total paid must be greater than 0.")
+        }
     }
 
     /** Sends a notification to the seller telling them their item was sold. */

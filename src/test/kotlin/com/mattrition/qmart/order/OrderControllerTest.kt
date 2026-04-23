@@ -5,192 +5,336 @@ import com.mattrition.qmart.cart.CartItem
 import com.mattrition.qmart.cart.CartItemRepository
 import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.notification.NotificationRepository
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
+import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.OrderItemRepository
-import com.mattrition.qmart.user.BalanceService
+import io.kotest.inspectors.forAll
+import io.kotest.inspectors.forOne
 import io.kotest.matchers.collections.shouldHaveSize
-import io.kotest.matchers.comparables.shouldBeLessThan
-import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.comparables.shouldBeGreaterThanOrEqualTo
+import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpMethod.GET
 import org.springframework.http.HttpMethod.POST
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
-import kotlin.jvm.optionals.getOrNull
+import java.util.UUID
 
 class OrderControllerTest : BaseH2Test() {
     companion object {
         private const val BASE_PATH = "/api/orders"
     }
 
-    @Autowired lateinit var cartItemRepository: CartItemRepository
-
     @Autowired lateinit var orderRepository: OrderRepository
 
-    @Autowired lateinit var orderItemRepository: OrderItemRepository
-
-    @Autowired lateinit var balanceService: BalanceService
+    @Autowired lateinit var cartItemRepository: CartItemRepository
 
     @Autowired lateinit var notificationRepository: NotificationRepository
 
-    private lateinit var sampleListing1: ItemListing
-    private lateinit var sampleListing2: ItemListing
+    @Autowired lateinit var orderItemRepository: OrderItemRepository
+
+    @Autowired lateinit var orderService: OrderService
+
+    private lateinit var listingMod: ItemListing
+    private lateinit var listingAdmin: ItemListing
+
+    private val guestId = UUID.randomUUID()
+
+    /** Pre-fills a create order request with shipping information. */
+    private fun genCreateOrder(
+        buyerId: UUID? = null,
+        guestSessionId: UUID? = null,
+        guestEmail: String? = null,
+        totalPaid: BigDecimal = BigDecimal("1.00"),
+    ) = CreateOrderRequestDto(
+        buyerId = buyerId,
+        guestSessionId = guestSessionId,
+        guestEmail = guestEmail,
+        totalPaid = totalPaid,
+        shippingFirstname = "Test",
+        shippingLastname = "Last",
+        shippingAddress1 = "123 street",
+        shippingAddress2 = null,
+        shippingCity = "New York",
+        shippingState = "New York",
+        shippingZip = "55555",
+        shippingPhone = "555-555-5555",
+    )
 
     @BeforeEach
-    fun addItemListing() {
-        sampleListing1 =
-            itemListingRepository.save(
-                ItemListing(
-                    sellerId = TestUsers.superadmin.id!!,
-                    title = "Sample Listing by superadmin",
-                    price = BigDecimal(100),
-                ),
+    fun init() {
+        val listings = super.initListings()
+
+        listingMod = listings.first()
+        listingAdmin = listings.last()
+
+        // Add items to user's cart
+        val cartItem1 =
+            CartItem(userId = TestUsers.user.id!!, listingId = listingMod.id!!, quantity = 1)
+
+        val cartItem2 =
+            CartItem(userId = TestUsers.user.id!!, listingId = listingAdmin.id!!, quantity = 1)
+
+        // Guest cart item
+        val guestCartItem =
+            CartItem(
+                userId = null,
+                guestSessionId = guestId,
+                listingId = listingMod.id!!,
+                quantity = 1,
             )
 
-        sampleListing2 =
-            itemListingRepository.save(
-                ItemListing(
-                    sellerId = TestUsers.superadmin.id!!,
-                    title = "Second Sample Listing by superadmin",
-                    price = BigDecimal(250),
-                ),
-            )
-    }
-
-    @AfterEach
-    fun checkItemListing() {
-        itemListingRepository.findItemListingsBySellerId(TestUsers.superadmin.id!!) shouldHaveSize 2
+        cartItemRepository.saveAll(listOf(guestCartItem, cartItem1, cartItem2))
     }
 
     @Nested
-    inner class CreateOrder {
+    inner class CreateOrders {
         @Test
-        fun `should prevent requests not belonging to buyer and return 403 forbidden`() {
-            val sampleOrder =
-                orderWithAddress(buyerId = TestUsers.user.id!!, totalPaid = BigDecimal(100))
+        fun `should return 403 forbidden when creating an order using mismatched token`() {
+            val req = genCreateOrder(buyerId = TestUsers.user.id!!)
 
             mockRequest(
                 requestType = POST,
                 path = BASE_PATH,
-                token = TestTokens.admin,
-                body = sampleOrder,
+                token = TestTokens.superadmin,
+                body = req,
             ).andExpect(status().isForbidden)
+
+            // Non-authenticated request
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = req)
+                .andExpect(status().isForbidden)
         }
 
         @Test
-        fun `creating an order with no cart items should return 400 bad request`() {
-            val sampleOrder = orderWithAddress(TestUsers.user.id!!, BigDecimal(100))
-            val userCartItems = cartItemRepository.findCartItemsByUserId(TestUsers.user.id!!)
-            userCartItems shouldHaveSize 0
+        fun `should create order for user`() {
+            val req = genCreateOrder(buyerId = TestUsers.user.id!!)
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = TestTokens.user, body = req)
+                .andExpect(status().isCreated)
+        }
+
+        @Test
+        fun `should create order for non-user`() {
+            val req =
+                genCreateOrder(
+                    buyerId = null,
+                    guestSessionId = guestId,
+                    guestEmail = "test@email.com",
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = req)
+                .andExpect(status().isCreated)
+        }
+
+        @Test
+        fun `should return 400 bad request with conflicting ownership`() {
+            val noOwnerReq =
+                genCreateOrder(
+                    buyerId = null,
+                    guestSessionId = null,
+                    guestEmail = "test@email.com", // should not matter
+                )
+
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = noOwnerReq)
+                .andExpect(status().isBadRequest)
+
+            val bothOwnerReq =
+                genCreateOrder(
+                    buyerId = TestUsers.user.id!!,
+                    guestSessionId = guestId,
+                    guestEmail = "test@email.com", // should not matter
+                )
 
             mockRequest(
                 requestType = POST,
                 path = BASE_PATH,
                 token = TestTokens.user,
-                body = sampleOrder,
+                body = bothOwnerReq,
             ).andExpect(status().isBadRequest)
         }
 
         @Test
-        fun `should return status 403 forbidden when user has insufficient funds`() {
-            cartItemRepository.save(
-                CartItem(
-                    userId = TestUsers.user.id!!,
-                    listingId = sampleListing1.id!!,
-                    quantity = 500, // Expensive
-                ),
-            )
+        fun `should return 400 bad request with non-user origin without guest email`() {
+            val req = genCreateOrder(buyerId = null, guestSessionId = guestId, guestEmail = null)
 
-            val sampleOrder = orderWithAddress(TestUsers.user.id!!, BigDecimal(5000))
-            TestUsers.user.balance shouldBeLessThan BigDecimal(5000)
-
-            mockRequest(
-                requestType = POST,
-                path = BASE_PATH,
-                token = TestTokens.user,
-                body = sampleOrder,
-            ).andExpect(status().isForbidden)
+            mockRequest(requestType = POST, path = BASE_PATH, token = null, body = req)
+                .andExpect(status().isBadRequest)
         }
 
         @Test
-        fun `creating an order abides by all business rules`() {
-            // Add an item to the cart
-            cartItemRepository.saveAll(
-                listOf(
-                    CartItem(
-                        userId = TestUsers.user.id!!,
-                        listingId = sampleListing1.id!!,
-                        quantity = 2,
-                    ),
-                    CartItem(
-                        userId = TestUsers.user.id!!,
-                        listingId = sampleListing2.id!!,
-                        quantity = 1,
-                    ),
-                ),
-            )
+        fun `should return 400 bad request on invalid total paid values`() {
+            val invalidValues = listOf(BigDecimal("-1.0"), BigDecimal("-9999.0"), BigDecimal("0.0"))
 
-            // Add an item to a different user's cart
-            cartItemRepository.save(
-                CartItem(
-                    userId = TestUsers.admin.id!!,
-                    listingId = sampleListing1.id!!,
-                    quantity = 1,
-                ),
-            )
+            invalidValues.forEach { value ->
+                val req =
+                    genCreateOrder(
+                        buyerId = TestUsers.user.id!!,
+                        guestSessionId = null,
+                        guestEmail = null,
+                        totalPaid = value,
+                    )
 
-            fun adminCartItems() = cartItemRepository.findCartItemsByUserId(TestUsers.admin.id!!)
+                mockRequest(
+                    requestType = POST,
+                    path = BASE_PATH,
+                    token = TestTokens.user,
+                    body = req,
+                ).andExpect(status().isBadRequest)
+            }
+        }
 
-            fun userCartItems() = cartItemRepository.findCartItemsByUserId(TestUsers.user.id!!)
+        @Nested
+        inner class IntegrityTests {
+            private val userRequest =
+                genCreateOrder(buyerId = TestUsers.user.id!!, totalPaid = BigDecimal("300.0"))
 
-            fun getTestUser() = userRepository.findById(TestUsers.user.id!!).getOrNull().shouldNotBeNull()
+            @Test
+            fun `should deduct balance from user`() {
+                val prevBalance = TestUsers.user.balance
+                prevBalance shouldBeGreaterThanOrEqualTo BigDecimal("300.0")
 
-            adminCartItems() shouldHaveSize 1
-            userCartItems() shouldHaveSize 2
+                mockRequest(
+                    requestType = POST,
+                    path = BASE_PATH,
+                    token = TestTokens.user,
+                    body = userRequest,
+                ).andExpect(status().isCreated)
 
-            // Ensure we have enough to buy the items
-            var initialBalance = getTestUser().balance.shouldNotBeNull()
-            if (initialBalance < BigDecimal(450)) {
-                initialBalance = balanceService.setBalance(TestUsers.user.id!!, BigDecimal(1000))
+                val expectedBalance = prevBalance - BigDecimal("300.00")
+                val user = userRepository.findById(TestUsers.user.id!!).get()
+                user.balance shouldBe expectedBalance
             }
 
-            val sampleOrder = orderWithAddress(TestUsers.user.id!!, BigDecimal(450))
+            @Test
+            fun `should clear buyer's cart items`() {
+                val prevItems = cartItemRepository.findCartItemsByUserId(TestUsers.user.id!!)
+                prevItems shouldHaveSize 2
 
+                mockRequest(
+                    requestType = POST,
+                    path = BASE_PATH,
+                    token = TestTokens.user,
+                    body = userRequest,
+                ).andExpect(status().isCreated)
+
+                val userItems = cartItemRepository.findCartItemsByUserId(TestUsers.user.id!!)
+                userItems shouldHaveSize 0
+            }
+
+            @Test
+            fun `should send notification to sellers`() {
+                val prevNotifsMod = notificationRepository.findByUser(TestUsers.moderator.id!!)
+                prevNotifsMod shouldHaveSize 0
+
+                val prevNotifsAdmin = notificationRepository.findByUser(TestUsers.admin.id!!)
+                prevNotifsAdmin shouldHaveSize 0
+
+                mockRequest(
+                    requestType = POST,
+                    path = BASE_PATH,
+                    token = TestTokens.user,
+                    body = userRequest,
+                ).andExpect(status().isCreated)
+
+                val modNotifs = notificationRepository.findByUser(TestUsers.moderator.id!!)
+                modNotifs shouldHaveSize 1
+
+                val adminNotifs = notificationRepository.findByUser(TestUsers.admin.id!!)
+                adminNotifs shouldHaveSize 1
+            }
+
+            @Test
+            fun `should create order items based on items in cart`() {
+                mockRequest(
+                    requestType = POST,
+                    path = BASE_PATH,
+                    token = TestTokens.user,
+                    body = userRequest,
+                ).andExpect(status().isCreated)
+
+                val userOrders = orderRepository.findOrdersByBuyerId(TestUsers.user.id!!)
+                userOrders shouldHaveSize 1
+
+                val userOrder = userOrders.first()
+                val orderItems = orderItemRepository.findOrderItemsByOrderId(userOrder.id!!)
+                orderItems shouldHaveSize 2
+                orderItems.forOne { it.listingId shouldBe listingMod.id }
+                orderItems.forOne { it.listingId shouldBe listingAdmin.id }
+            }
+        }
+    }
+
+    @Nested
+    inner class GetOrders {
+        @BeforeEach
+        fun init() {
+            val userRequest =
+                genCreateOrder(
+                    buyerId = TestUsers.user.id!!,
+                    guestSessionId = null,
+                    guestEmail = null,
+                )
+
+            authenticate(TestUsers.user)
+
+            orderService.createOrder(userRequest)
+
+            val guestRequest =
+                genCreateOrder(guestSessionId = guestId, guestEmail = "email@test.com")
+
+            clearAuth()
+
+            orderService.createOrder(guestRequest)
+        }
+
+        @Test
+        fun `should get orders by user`() {
             mockRequest(
-                requestType = POST,
-                path = BASE_PATH,
+                requestType = GET,
+                path = "$BASE_PATH/user/${TestUsers.user.id}",
                 token = TestTokens.user,
-                body = sampleOrder,
-            ).andExpect(status().isCreated)
+            ).andExpect(status().isOk)
+                .andExpect(jsonPath("$.length()").value(1))
+        }
 
-            // Test business rules:
-            // Cart items cleared for user only
-            userCartItems() shouldHaveSize 0
-            adminCartItems() shouldHaveSize 1
+        @Test
+        fun `should get orders for seller with relevant items only`() {
+            val result =
+                mockRequest(
+                    requestType = GET,
+                    path = "$BASE_PATH/seller/${TestUsers.moderator.id}",
+                    token = TestTokens.moderator,
+                    params = mapOf("unfinished" to "true"),
+                ).andExpect(status().isOk)
+                    .andReturn()
 
-            // Money deducted
-            val newBalance = initialBalance - sampleOrder.totalPaid
-            getTestUser().balance shouldBeEqual newBalance
+            val body = result.response.contentAsString
+            val orders = objectMapper.readValue<List<OrderDto>>(body)
+            orders shouldHaveSize 2
 
-            // User has 1 order
-            val userOrders = orderRepository.findOrdersByBuyerId(TestUsers.user.id!!)
-            userOrders shouldHaveSize 1
+            // Verify order from user
+            orders.forOne { o ->
+                o.buyerId.shouldNotBeNull() shouldBe TestUsers.user.id!!
+                o.guestEmail.shouldBeNull()
+            }
 
-            // Verify integrity of data
-            val userOrder = userOrders.first()
-            userOrder.totalPaid shouldBe sampleOrder.totalPaid
+            // Verify order from guest
+            orders.forOne { o ->
+                o.buyerId.shouldBeNull()
+                o.guestEmail.shouldNotBeNull()
+            }
 
-            // Order items associated with the order were created
-            val userOrderItems = orderItemRepository.findOrderItemsByOrderId(userOrder.id!!)
-            userOrderItems shouldHaveSize 2 // Two items were in the cart
-
-            // Ensure 2 notifications were sent to the seller, 1 per item
-            val adminNotifs = notificationRepository.findByUser(TestUsers.superadmin.id!!)
-            adminNotifs shouldHaveSize 2
+            // Verify all order items are only for the seller
+            orders.forEach { order ->
+                order.orderItems.forAll { it.sellerId shouldBe TestUsers.moderator.id }
+            }
         }
     }
 }

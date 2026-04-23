@@ -70,7 +70,7 @@ class NotificationService(
         }
 
     private fun ensureUserOwnership(notification: Notification) {
-        val auth = authPrincipal()
+        val auth = authPrincipal()!!
 
         if (auth.id != notification.userId) {
             throw ForbiddenException("Forbidden.")

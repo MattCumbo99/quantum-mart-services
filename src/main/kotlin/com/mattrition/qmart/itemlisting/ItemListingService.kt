@@ -91,11 +91,11 @@ class ItemListingService(
         itemListingRepo.save(listing)
     }
 
-    private fun authOwnsListing(listing: ItemListing) = listing.sellerId == authPrincipal().id
+    private fun authOwnsListing(listing: ItemListing) = listing.sellerId == authPrincipal()!!.id
 
     /** Saves a new item listing entity to the database and returns the provided information. */
     fun createListing(request: CreateListingRequest): ItemListingDto {
-        val authUser = authPrincipal()
+        val authUser = authPrincipal()!!
 
         val listingEntry =
             ItemListing(

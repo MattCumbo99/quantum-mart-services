@@ -3,12 +3,10 @@ package com.mattrition.qmart.util
 import com.mattrition.qmart.auth.CustomUserDetails
 import org.springframework.security.core.context.SecurityContextHolder
 
-/** Retrieves authenticated information in a request. */
-fun authPrincipal(): CustomUserDetails {
+/** Retrieves authenticated information in a request, or null if non-user. */
+fun authPrincipal(): CustomUserDetails? {
     val auth = SecurityContextHolder.getContext().authentication
+    val principal = auth?.principal
 
-    return auth!!.principal as CustomUserDetails
+    return principal as? CustomUserDetails
 }
-
-/** Checks if the authenticated user has moderator privileges. */
-fun authHasMod() = authPrincipal().authorities.any { it.authority == "ROLE_MODERATOR" }

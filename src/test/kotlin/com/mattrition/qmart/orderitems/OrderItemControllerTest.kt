@@ -3,13 +3,11 @@ package com.mattrition.qmart.orderitems
 import com.mattrition.qmart.BaseH2Test
 import com.mattrition.qmart.cart.CartItem
 import com.mattrition.qmart.cart.CartItemRepository
-import com.mattrition.qmart.cart.dto.CartItemWithListingDto
-import com.mattrition.qmart.itemlisting.dto.ItemListingMapper
 import com.mattrition.qmart.order.OrderService
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.orderitem.OrderItemRepository
 import com.mattrition.qmart.orderitem.OrderItemStatus
-import com.mattrition.qmart.orderitem.mapper.OrderItemMapper
 import io.kotest.matchers.comparables.shouldBeLessThanOrEqualTo
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -42,36 +40,28 @@ class OrderItemControllerTest : BaseH2Test() {
         val listings = super.initListings()
 
         val cartItem =
-            cartItemRepository.save(
-                CartItem(
-                    userId = TestUsers.user.id!!,
-                    listingId = listings.first().id!!,
-                    quantity = 1,
-                ),
+            CartItem(userId = TestUsers.user.id!!, listingId = listings.first().id!!, quantity = 1)
+        cartItemRepository.save(cartItem)
+
+        val createReq =
+            CreateOrderRequestDto(
+                buyerId = TestUsers.user.id!!,
+                guestSessionId = null,
+                guestEmail = null,
+                totalPaid = BigDecimal(100),
+                shippingFirstname = "Test1",
+                shippingLastname = "Test2",
+                shippingAddress1 = "1234 Main St",
+                shippingAddress2 = null,
+                shippingCity = "London",
+                shippingState = "California",
+                shippingZip = "11111",
+                shippingPhone = "555-555-5555",
             )
 
-        // Create an order request for the moderator
-        order =
-            orderService.createOrder(
-                super.orderWithAddress(
-                    buyerId = TestUsers.user.id!!,
-                    totalPaid = BigDecimal(100),
-                    orderItems =
-                        listOf(
-                            OrderItemMapper.fromCartItemDto(
-                                CartItemWithListingDto(
-                                    cartItemId = cartItem.id!!,
-                                    quantity = cartItem.quantity,
-                                    itemListing =
-                                        ItemListingMapper.toDto(
-                                            listings.first(),
-                                            TestUsers.moderator.username,
-                                        ),
-                                ),
-                            ),
-                        ),
-                ),
-            )
+        authenticate(TestUsers.user)
+
+        order = orderService.createOrder(createReq)
     }
 
     @Nested
@@ -80,9 +70,9 @@ class OrderItemControllerTest : BaseH2Test() {
         fun `non-seller patching order item should return 403 forbidden`() {
             mockRequest(
                 requestType = PATCH,
-                path =
-                    "$BASE_PATH/${order.orderItems.first().id!!}?newStatus=${OrderItemStatus.SHIPPED}",
+                path = "$BASE_PATH/${order.orderItems.first().id!!}",
                 token = TestTokens.user,
+                params = mapOf("newStatus" to OrderItemStatus.SHIPPED.toString()),
             ).andExpect(status().isForbidden)
         }
 

@@ -1,12 +1,10 @@
 package com.mattrition.qmart
 
+import com.mattrition.qmart.auth.CustomUserDetails
 import com.mattrition.qmart.auth.JwtService
 import com.mattrition.qmart.config.SecurityConfig
 import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.itemlisting.ItemListingRepository
-import com.mattrition.qmart.order.OrderStatus
-import com.mattrition.qmart.order.dto.OrderDto
-import com.mattrition.qmart.orderitem.dto.OrderItemDto
 import com.mattrition.qmart.user.User
 import com.mattrition.qmart.user.UserRepository
 import com.mattrition.qmart.user.UserRole
@@ -19,6 +17,8 @@ import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
@@ -27,7 +27,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
-import java.util.UUID
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -162,12 +161,14 @@ abstract class BaseH2Test {
      * @param path URI of the controller.
      * @param token Which [TestTokens] to use for this call, or `null` if non-user.
      * @param body Data body in the request for `POST` calls.
+     * @param params Parameters to add to the request.
      */
     protected fun mockRequest(
         requestType: HttpMethod,
         path: String,
         token: String? = null,
         body: Any? = null,
+        params: Map<String, String> = emptyMap(),
     ): ResultActions {
         val builder =
             when (requestType) {
@@ -191,24 +192,26 @@ abstract class BaseH2Test {
             builder.header(HttpHeaders.AUTHORIZATION, "Bearer $token")
         }
 
+        params.forEach { (k, v) -> builder.param(k, v) }
+
         return mockMvc.perform(builder)
     }
 
-    protected fun orderWithAddress(
-        buyerId: UUID,
-        totalPaid: BigDecimal = BigDecimal.ZERO,
-        orderItems: List<OrderItemDto> = emptyList(),
-    ) = OrderDto(
-        buyerId = buyerId,
-        status = OrderStatus.PENDING,
-        totalPaid = totalPaid,
-        shippingFirstname = "Test1",
-        shippingLastname = "Test2",
-        shippingAddress1 = "1234 Main St",
-        shippingCity = "London",
-        shippingState = "California",
-        shippingZip = "11111",
-        shippingPhone = "555-555-5555",
-        orderItems = orderItems,
-    )
+    /**
+     * Inserts authentication information into the application. Useful for getting past certain
+     * service rules.
+     *
+     * @param user User to authenticate with.
+     */
+    protected fun authenticate(user: User) {
+        val principal = CustomUserDetails(user)
+        val auth = UsernamePasswordAuthenticationToken(principal, null, principal.authorities)
+
+        SecurityContextHolder.getContext().authentication = auth
+    }
+
+    /** Removes authentication information to simulate a non-user using the app. */
+    protected fun clearAuth() {
+        SecurityContextHolder.clearContext()
+    }
 }

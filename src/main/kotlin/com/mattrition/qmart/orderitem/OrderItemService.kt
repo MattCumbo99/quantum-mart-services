@@ -41,7 +41,7 @@ class OrderItemService(
         if (newStatus == OrderItemStatus.SHIPPED) {
             orderItem.shippedOn = OffsetDateTime.now()
 
-            orderItem.order?.let { notifyBuyer(it.buyerId, OrderItemMapper.toDto(orderItem)) }
+            orderItem.order?.buyerId?.let { notifyBuyer(it, OrderItemMapper.toDto(orderItem)) }
         }
 
         val orderItemDto = OrderItemMapper.toDto(orderItem)
@@ -62,7 +62,7 @@ class OrderItemService(
     }
 
     private fun ensureAuthUserIsSeller(sellerId: UUID) {
-        val principal = authPrincipal()
+        val principal = authPrincipal()!!
 
         if (sellerId != principal.id) {
             throw ForbiddenException("User not authorized.")

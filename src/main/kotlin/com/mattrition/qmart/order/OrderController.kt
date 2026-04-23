@@ -1,5 +1,6 @@
 package com.mattrition.qmart.order
 
+import com.mattrition.qmart.order.dto.CreateOrderRequestDto
 import com.mattrition.qmart.order.dto.OrderDto
 import com.mattrition.qmart.user.UserRole
 import jakarta.annotation.security.RolesAllowed
@@ -20,19 +21,13 @@ import java.util.UUID
 class OrderController(
     private val orderService: OrderService,
 ) {
-    @GetMapping("/userId/{userId}")
+    @GetMapping("/user/{userId}")
     @RolesAllowed(UserRole.USER)
     fun getBuyerOrders(
         @PathVariable userId: UUID,
     ): List<OrderDto> = orderService.getOrdersBoughtBy(userId)
 
-    @GetMapping("/username/{username}")
-    @RolesAllowed(UserRole.USER)
-    fun getBuyerOrdersByUsername(
-        @PathVariable username: String,
-    ): List<OrderDto> = orderService.getOrdersBoughtBy(username)
-
-    @GetMapping("/sellerId/{sellerId}")
+    @GetMapping("/seller/{sellerId}")
     @PreAuthorize("isAuthenticated() && #sellerId == authentication.principal.id")
     fun getRelevantOrdersToSeller(
         @PathVariable sellerId: UUID,
@@ -40,11 +35,10 @@ class OrderController(
     ): List<OrderDto> = orderService.getOrdersForSeller(sellerId, unfinished)
 
     @PostMapping
-    @PreAuthorize("isAuthenticated() && #orderInfo.buyerId == authentication.principal.id")
     fun createOrder(
-        @RequestBody orderInfo: OrderDto,
+        @RequestBody orderReq: CreateOrderRequestDto,
     ): ResponseEntity<OrderDto> {
-        val orderWithItems = orderService.createOrder(orderInfo)
+        val orderWithItems = orderService.createOrder(orderReq)
 
         return ResponseEntity(orderWithItems, HttpStatus.CREATED)
     }
