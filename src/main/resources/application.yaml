@@ -16,6 +16,11 @@ spring:
     user: ${DB_USERNAME}
     password: ${DB_PASSWORD}
 
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
   jpa:
     hibernate:
       ddl-auto: validate
@@ -23,6 +28,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+app:
+  public-url: ${PUBLIC_URL:http://localhost:8080}
 
 jwt:
   secret: 1d2i0jf0923thg91wd1uegh03hth13irh9fj31h12rh129
