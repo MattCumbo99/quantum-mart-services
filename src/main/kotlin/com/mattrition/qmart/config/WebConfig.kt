@@ -21,8 +21,7 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        registry.addResourceHandler("/uploads/**")
-            .addResourceLocations("file:uploads/")
+        registry.addResourceHandler("/uploads/**").addResourceLocations("file:uploads/")
     }
 
     override fun addInterceptors(registry: InterceptorRegistry) {
