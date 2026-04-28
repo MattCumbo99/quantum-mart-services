@@ -46,6 +46,8 @@ class ItemListingControllerTest : BaseH2Test() {
                     imageUrl = null,
                     sellerId = UUID.randomUUID(), // How exactly is the guest user setting this?
                     sellerUsername = "UNKNOWN",
+                    categorySlug = "uncategorized",
+                    categoryName = "Uncategorized",
                 )
 
             mockRequest(requestType = POST, path = BASE_PATH, token = null, body = listing)
@@ -65,6 +67,8 @@ class ItemListingControllerTest : BaseH2Test() {
                     imageUrl = null,
                     sellerId = TestUsers.user.id!!,
                     sellerUsername = TestUsers.user.username,
+                    categorySlug = "uncategorized",
+                    categoryName = "Uncategorized",
                 )
 
             mockRequest(

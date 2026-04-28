@@ -2,6 +2,8 @@ package com.mattrition.qmart
 
 import com.mattrition.qmart.auth.CustomUserDetails
 import com.mattrition.qmart.auth.JwtService
+import com.mattrition.qmart.category.Category
+import com.mattrition.qmart.category.CategoryRepository
 import com.mattrition.qmart.config.SecurityConfig
 import com.mattrition.qmart.itemlisting.ItemListing
 import com.mattrition.qmart.itemlisting.ItemListingRepository
@@ -27,6 +29,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.transaction.annotation.Transactional
 import tools.jackson.databind.ObjectMapper
 import java.math.BigDecimal
+import kotlin.jvm.optionals.getOrNull
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,6 +45,8 @@ abstract class BaseH2Test {
     @Autowired protected lateinit var userRepository: UserRepository
 
     @Autowired protected lateinit var itemListingRepository: ItemListingRepository
+
+    @Autowired protected lateinit var categoryRepository: CategoryRepository
 
     @Autowired protected lateinit var jwtService: JwtService
 
@@ -133,12 +138,16 @@ abstract class BaseH2Test {
      * @return All item listings.
      */
     protected fun initListings(): List<ItemListing> {
+        val category =
+            categoryRepository.save(Category(name = "Sample Category", slug = "sample-category"))
+
         itemListingRepository.save(
             ItemListing(
                 sellerId = TestUsers.moderator.id!!,
                 title = "Test Listing 1",
                 description = "Test listing.",
                 price = BigDecimal.valueOf(100),
+                categoryId = category.id!!,
             ),
         )
 
@@ -148,11 +157,14 @@ abstract class BaseH2Test {
                 title = "Test Listing 2",
                 description = "Test listing, but admin.",
                 price = BigDecimal.valueOf(250),
+                categoryId = category.id!!,
             ),
         )
 
         return itemListingRepository.findAll()
     }
+
+    protected fun ItemListing.category() = categoryRepository.findById(this.categoryId).getOrNull()
 
     /**
      * Sends a mock HTTP request to a specified rest controller.
