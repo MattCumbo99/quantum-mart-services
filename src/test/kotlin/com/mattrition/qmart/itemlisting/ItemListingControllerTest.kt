@@ -87,34 +87,40 @@ class ItemListingControllerTest : BaseH2Test() {
     inner class GetItemListing {
         @Test
         fun `should get items by user id`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/seller/${TestUsers.moderator.id}")
-                .andExpect(status().isOk)
+            mockRequest(
+                requestType = GET,
+                path = "$BASE_PATH/seller/${TestUsers.moderator.id}",
+                token = null,
+            ).andExpect(status().isOk)
                 .andExpect(jsonPath("$[0].sellerUsername").value(TestUsers.moderator.username))
         }
 
         @Test
         fun `should return 404 not found on non-existing user`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/seller/${UUID.randomUUID()}")
-                .andExpect(status().isNotFound)
+            mockRequest(
+                requestType = GET,
+                path = "$BASE_PATH/seller/${UUID.randomUUID()}",
+                token = null,
+            ).andExpect(status().isNotFound)
         }
 
         @Test
         fun `should get all item listings`() {
-            mockRequest(requestType = GET, path = BASE_PATH)
+            mockRequest(requestType = GET, path = BASE_PATH, token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.length()").value(2))
         }
 
         @Test
         fun `should get single item listing by id`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/${listing1.id}")
+            mockRequest(requestType = GET, path = "$BASE_PATH/${listing1.id}", token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.id").value(listing1.id.toString()))
         }
 
         @Test
         fun `should return 404 not found on unknown listing id`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}")
+            mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}", token = null)
                 .andExpect(status().isNotFound)
         }
     }

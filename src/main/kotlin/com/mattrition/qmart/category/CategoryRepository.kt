@@ -13,7 +13,5 @@ interface CategoryRepository : JpaRepository<Category, UUID> {
     )
     fun findAllActive(): List<Category>
 
-    fun findBySlugExists(slug: String): Boolean
-
     fun findCategoryBySlug(slug: String): Category?
 }

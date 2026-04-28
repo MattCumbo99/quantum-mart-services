@@ -5,6 +5,7 @@ import com.mattrition.qmart.category.dto.CreateCategoryDto
 import com.mattrition.qmart.category.dto.PatchCategoryDto
 import com.mattrition.qmart.category.mapper.CategoryMapper
 import com.mattrition.qmart.exception.BadRequestException
+import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
@@ -63,6 +64,7 @@ class CategoryService(
 
             if (slug != category.slug) {
                 enforceValidSlug(slug)
+                category.slug = newSlug
                 updated = true
             }
         }
@@ -84,10 +86,10 @@ class CategoryService(
     }
 
     private fun enforceValidSlug(slug: String) {
-        val slugExists = categoryRepository.findBySlugExists(slug)
+        val slugExists = categoryRepository.findCategoryBySlug(slug) != null
 
         if (slugExists) {
-            throw BadRequestException("Slug '$slug' already exists.")
+            throw ForbiddenException("Slug '$slug' already exists.")
         }
 
         if (!slugRegex.matches(slug)) {

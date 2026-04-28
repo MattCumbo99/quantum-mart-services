@@ -131,7 +131,8 @@ abstract class BaseH2Test {
     }
 
     /**
-     * Initializes the item listing repository with two listings:
+     * This method first creates a new category, then initializes the item listing repository with
+     * two listings:
      * 1. Sold by `moderator` with a price of 100
      * 2. Sold by `admin` with a price of 250
      *
@@ -178,7 +179,7 @@ abstract class BaseH2Test {
     protected fun mockRequest(
         requestType: HttpMethod,
         path: String,
-        token: String? = null,
+        token: String?,
         body: Any? = null,
         params: Map<String, String> = emptyMap(),
     ): ResultActions {
