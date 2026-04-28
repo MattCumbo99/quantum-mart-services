@@ -7,4 +7,5 @@ data class CreateListingRequest(
     val description: String? = null,
     val price: BigDecimal,
     val imageUrl: String? = null,
+    val categorySlug: String,
 )

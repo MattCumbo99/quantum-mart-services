@@ -1,9 +1,9 @@
 package com.mattrition.qmart.itemlisting.dto
 
+import com.mattrition.qmart.category.Category
 import com.mattrition.qmart.itemlisting.ItemListing
-import com.mattrition.qmart.util.EntityMapper
 
-object ItemListingMapper : EntityMapper<ItemListing, ItemListingDto> {
+object ItemListingMapper {
     /**
      * Converts an item listing database entity into its data transfer object.
      *
@@ -12,6 +12,7 @@ object ItemListingMapper : EntityMapper<ItemListing, ItemListingDto> {
     fun toDto(
         entity: ItemListing,
         sellerUsername: String,
+        category: Category,
     ) = ItemListingDto(
         id = entity.id,
         title = entity.title,
@@ -26,21 +27,7 @@ object ItemListingMapper : EntityMapper<ItemListing, ItemListingDto> {
         quantitySold = entity.quantitySold,
         averageScore = entity.averageScore,
         reviewCount = entity.reviewCount,
+        categoryName = category.name,
+        categorySlug = category.slug,
     )
-
-    @Deprecated(
-        message = "Unsupported method. Will throw an error.",
-        level = DeprecationLevel.ERROR,
-    )
-    override fun toDto(entity: ItemListing): ItemListingDto =
-        throw UnsupportedOperationException("Use toDto(entity, sellerUsername) instead.")
-
-    override fun asNewEntity(dto: ItemListingDto) =
-        ItemListing(
-            title = dto.title,
-            description = dto.description,
-            price = dto.price,
-            imageUrl = dto.imageUrl,
-            sellerId = dto.sellerId,
-        )
 }

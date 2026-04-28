@@ -2,6 +2,7 @@ package com.mattrition.qmart.cart
 
 import com.mattrition.qmart.cart.dto.AddCartItemDto
 import com.mattrition.qmart.cart.dto.CartItemWithListingDto
+import com.mattrition.qmart.category.CategoryRepository
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.itemlisting.ItemListingRepository
@@ -18,6 +19,7 @@ class CartItemService(
     private val cartItemRepo: CartItemRepository,
     private val itemListingRepo: ItemListingRepository,
     private val userRepo: UserRepository,
+    private val categoryRepository: CategoryRepository,
 ) {
     /** Retrieves a list of cart items and their listings held under a user's cart. */
     fun getCartItemsByUserId(userId: UUID): List<CartItemWithListingDto> {
@@ -159,11 +161,12 @@ class CartItemService(
         return cartItems.map { cartItem ->
             val listing = itemListings[cartItem.listingId]!!
             val sellerUsername = userRepo.findById(listing.sellerId).get().username
+            val category = categoryRepository.findById(listing.categoryId).get()
 
             CartItemWithListingDto(
                 id = cartItem.id!!,
                 quantity = cartItem.quantity,
-                itemListing = ItemListingMapper.toDto(listing, sellerUsername),
+                itemListing = ItemListingMapper.toDto(listing, sellerUsername, category),
             )
         }
     }

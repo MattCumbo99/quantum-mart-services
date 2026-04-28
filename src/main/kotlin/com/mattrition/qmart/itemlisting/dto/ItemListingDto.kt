@@ -18,4 +18,6 @@ data class ItemListingDto(
     val quantitySold: Int = 0,
     val reviewCount: Int = 0,
     val averageScore: BigDecimal = BigDecimal("0.0"),
+    val categorySlug: String,
+    val categoryName: String,
 )
