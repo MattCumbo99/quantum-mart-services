@@ -19,27 +19,32 @@ class UserControllerTest : BaseH2Test() {
     inner class GetUsers {
         @Test
         fun `should return 403 forbidden when no auth`() {
-            mockRequest(GET, BASE_PATH).andExpect(status().isForbidden)
+            mockRequest(requestType = GET, path = BASE_PATH, token = null)
+                .andExpect(status().isForbidden)
         }
 
         @Test
         fun `should return 403 forbidden if user`() {
-            mockRequest(GET, BASE_PATH, TestTokens.user).andExpect(status().isForbidden)
+            mockRequest(requestType = GET, path = BASE_PATH, token = TestTokens.user)
+                .andExpect(status().isForbidden)
         }
 
         @Test
         fun `should return 200 ok if moderator`() {
-            mockRequest(GET, BASE_PATH, TestTokens.moderator).andExpect(status().isOk)
+            mockRequest(requestType = GET, path = BASE_PATH, token = TestTokens.moderator)
+                .andExpect(status().isOk)
         }
 
         @Test
         fun `should return 200 ok if admin`() {
-            mockRequest(GET, BASE_PATH, TestTokens.admin).andExpect(status().isOk)
+            mockRequest(requestType = GET, path = BASE_PATH, token = TestTokens.admin)
+                .andExpect(status().isOk)
         }
 
         @Test
         fun `should return 200 ok if superadmin`() {
-            mockRequest(GET, BASE_PATH, TestTokens.superadmin).andExpect(status().isOk)
+            mockRequest(requestType = GET, path = BASE_PATH, TestTokens.superadmin)
+                .andExpect(status().isOk)
         }
     }
 
@@ -47,21 +52,25 @@ class UserControllerTest : BaseH2Test() {
     inner class GetUserByUsername {
         @Test
         fun `should retrieve admin by username`() {
-            mockRequest(GET, "$BASE_PATH/username/aDMin")
+            mockRequest(requestType = GET, path = "$BASE_PATH/username/aDMin", token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.username").value("Admin"))
         }
 
         @Test
         fun `should retrieve user by username`() {
-            mockRequest(GET, "$BASE_PATH/username/test_user123")
+            mockRequest(requestType = GET, path = "$BASE_PATH/username/test_user123", token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.username").value("test_user123"))
         }
 
         @Test
         fun `should return 404 not found`() {
-            mockRequest(GET, "$BASE_PATH/username/phantomUser210401").andExpect(status().isNotFound)
+            mockRequest(
+                requestType = GET,
+                path = "$BASE_PATH/username/phantomUser210401",
+                token = null,
+            ).andExpect(status().isNotFound)
         }
 
         @Test
@@ -76,14 +85,15 @@ class UserControllerTest : BaseH2Test() {
     inner class GetUserById {
         @Test
         fun `should retrieve user by id`() {
-            mockRequest(GET, "$BASE_PATH/${TestUsers.user.id}")
+            mockRequest(requestType = GET, path = "$BASE_PATH/${TestUsers.user.id}", token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.id").value(TestUsers.user.id.toString()))
         }
 
         @Test
         fun `should return 404 not found`() {
-            mockRequest(GET, "$BASE_PATH/${UUID.randomUUID()}").andExpect(status().isNotFound)
+            mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}", token = null)
+                .andExpect(status().isNotFound)
         }
     }
 
@@ -98,7 +108,8 @@ class UserControllerTest : BaseH2Test() {
                     email = "linus@linux.com",
                 )
 
-            mockRequest(POST, BASE_PATH, body = regInfo).andExpect(status().isCreated)
+            mockRequest(requestType = POST, path = BASE_PATH, body = regInfo, token = null)
+                .andExpect(status().isCreated)
         }
 
         @Test
@@ -110,7 +121,8 @@ class UserControllerTest : BaseH2Test() {
                     email = "blah@test.com",
                 )
 
-            mockRequest(POST, BASE_PATH, body = regInfo).andExpect(status().isConflict)
+            mockRequest(requestType = POST, path = BASE_PATH, body = regInfo, token = null)
+                .andExpect(status().isConflict)
         }
     }
 }

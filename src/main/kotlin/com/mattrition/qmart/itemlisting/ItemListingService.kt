@@ -1,5 +1,6 @@
 package com.mattrition.qmart.itemlisting
 
+import com.mattrition.qmart.category.CategoryRepository
 import com.mattrition.qmart.exception.BadRequestException
 import com.mattrition.qmart.exception.ForbiddenException
 import com.mattrition.qmart.exception.NotFoundException
@@ -20,13 +21,14 @@ import kotlin.jvm.optionals.getOrElse
 class ItemListingService(
     private val itemListingRepo: ItemListingRepository,
     private val userRepo: UserRepository,
+    private val categoryRepository: CategoryRepository,
 ) {
     /** Retrieves a list containing every item listing in the database. */
     fun getAllListings(): List<ItemListingDto> =
         itemListingRepo.findAll().map { listing ->
             val sellerUsername = userRepo.findById(listing.sellerId).get().username
 
-            ItemListingMapper.toDto(listing, sellerUsername)
+            ItemListingMapper.toDto(listing, sellerUsername, listing.category())
         }
 
     /**
@@ -41,7 +43,7 @@ class ItemListingService(
             }
         val sellerUsername = userRepo.findById(listing.sellerId).get().username
 
-        return ItemListingMapper.toDto(listing, sellerUsername)
+        return ItemListingMapper.toDto(listing, sellerUsername, listing.category())
     }
 
     /**
@@ -55,8 +57,29 @@ class ItemListingService(
                 throw NotFoundException("User with ID $userId not found.")
             }
 
-        return itemListingRepo.findItemListingsBySellerId(userId).map {
-            ItemListingMapper.toDto(it, user.username)
+        return itemListingRepo.findItemListingsBySellerId(userId).map { listing ->
+            ItemListingMapper.toDto(listing, user.username, listing.category())
+        }
+    }
+
+    /** Gets every listing associated with a category slug. The category must be active. */
+    fun getListingsByCategorySlug(slug: String): List<ItemListingDto> {
+        val lowerSlug = slug.lowercase()
+        val category = categoryRepository.findCategoryBySlug(lowerSlug)
+
+        if (category == null || !category.isActive) {
+            throw NotFoundException("Category with Slug $lowerSlug not found.")
+        }
+
+        val listings =
+            itemListingRepo.findByCategoryId(category.id!!).ifEmpty {
+                return emptyList()
+            }
+
+        return listings.map { listing ->
+            val seller = userRepo.findById(listing.sellerId).get()
+
+            ItemListingMapper.toDto(listing, seller.username, category)
         }
     }
 
@@ -97,6 +120,10 @@ class ItemListingService(
     fun createListing(request: CreateListingRequest): ItemListingDto {
         val authUser = authPrincipal()!!
 
+        val categoryId =
+            categoryRepository.findCategoryBySlug(request.categorySlug)?.id
+                ?: throw NotFoundException("Category with slug ${request.categorySlug} not found.")
+
         val listingEntry =
             ItemListing(
                 sellerId = authUser.id,
@@ -104,11 +131,12 @@ class ItemListingService(
                 description = request.description,
                 imageUrl = request.imageUrl,
                 price = request.price,
+                categoryId = categoryId,
             )
 
         val saved = itemListingRepo.save(listingEntry)
 
-        return ItemListingMapper.toDto(saved, authUser.username)
+        return ItemListingMapper.toDto(saved, authUser.username, saved.category())
     }
 
     /**
@@ -134,4 +162,11 @@ class ItemListingService(
 
         itemListingRepo.save(listing)
     }
+
+    private fun ItemListing.category() =
+        categoryRepository.findById(this.categoryId).getOrElse {
+            throw NotFoundException(
+                "Category with ID (${this.categoryId}) on listing (${this.id}) not found",
+            )
+        }
 }

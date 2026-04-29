@@ -31,4 +31,5 @@ class ItemListing(
     @Column(name = "review_count", nullable = false) var reviewCount: Int = 0,
     @Column(name = "average_score", nullable = false)
     var averageScore: BigDecimal = BigDecimal("0.0"),
+    @Column(name = "category_id", nullable = false) var categoryId: UUID,
 )

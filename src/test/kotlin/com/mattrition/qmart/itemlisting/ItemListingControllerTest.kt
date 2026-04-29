@@ -1,8 +1,11 @@
 package com.mattrition.qmart.itemlisting
 
 import com.mattrition.qmart.BaseH2Test
+import com.mattrition.qmart.category.Category
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.UpdateListingRequest
+import io.kotest.inspectors.forAll
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -14,6 +17,7 @@ import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
@@ -46,6 +50,8 @@ class ItemListingControllerTest : BaseH2Test() {
                     imageUrl = null,
                     sellerId = UUID.randomUUID(), // How exactly is the guest user setting this?
                     sellerUsername = "UNKNOWN",
+                    categorySlug = "uncategorized",
+                    categoryName = "Uncategorized",
                 )
 
             mockRequest(requestType = POST, path = BASE_PATH, token = null, body = listing)
@@ -65,6 +71,8 @@ class ItemListingControllerTest : BaseH2Test() {
                     imageUrl = null,
                     sellerId = TestUsers.user.id!!,
                     sellerUsername = TestUsers.user.username,
+                    categorySlug = "uncategorized",
+                    categoryName = "Uncategorized",
                 )
 
             mockRequest(
@@ -83,35 +91,98 @@ class ItemListingControllerTest : BaseH2Test() {
     inner class GetItemListing {
         @Test
         fun `should get items by user id`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/seller/${TestUsers.moderator.id}")
-                .andExpect(status().isOk)
+            mockRequest(
+                requestType = GET,
+                path = "$BASE_PATH/seller/${TestUsers.moderator.id}",
+                token = null,
+            ).andExpect(status().isOk)
                 .andExpect(jsonPath("$[0].sellerUsername").value(TestUsers.moderator.username))
         }
 
         @Test
         fun `should return 404 not found on non-existing user`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/seller/${UUID.randomUUID()}")
-                .andExpect(status().isNotFound)
+            mockRequest(
+                requestType = GET,
+                path = "$BASE_PATH/seller/${UUID.randomUUID()}",
+                token = null,
+            ).andExpect(status().isNotFound)
         }
 
         @Test
         fun `should get all item listings`() {
-            mockRequest(requestType = GET, path = BASE_PATH)
+            mockRequest(requestType = GET, path = BASE_PATH, token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.length()").value(2))
         }
 
         @Test
         fun `should get single item listing by id`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/${listing1.id}")
+            mockRequest(requestType = GET, path = "$BASE_PATH/${listing1.id}", token = null)
                 .andExpect(status().isOk)
                 .andExpect(jsonPath("$.id").value(listing1.id.toString()))
         }
 
         @Test
         fun `should return 404 not found on unknown listing id`() {
-            mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}")
+            mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}", token = null)
                 .andExpect(status().isNotFound)
+        }
+
+        @Nested
+        inner class GetByCategory {
+            private lateinit var sampleCategory: Category
+            private lateinit var otherCategory: Category
+
+            private lateinit var otherListing: ItemListing
+
+            @BeforeEach
+            fun initCategoryListings() {
+                sampleCategory = categoryRepository.findCategoryBySlug("sample-category")!!
+                otherCategory =
+                    categoryRepository.save(
+                        Category(name = "Test Category", slug = "test-category"),
+                    )
+
+                otherListing =
+                    itemListingRepository.save(
+                        ItemListing(
+                            sellerId = TestUsers.admin.id!!,
+                            title = "New Listing",
+                            description = "New listing.",
+                            price = BigDecimal.valueOf(5000),
+                            imageUrl = null,
+                            categoryId = otherCategory.id!!,
+                        ),
+                    )
+            }
+
+            @Test
+            fun `should get listings by category`() {
+                val result =
+                    mockRequest(
+                        requestType = GET,
+                        path = "$BASE_PATH/category/${sampleCategory.slug}",
+                        token = null,
+                    ).andExpect(status().isOk)
+                        .andReturn()
+
+                val body = result.response.contentAsString
+                val listings = objectMapper.readValue<List<ItemListingDto>>(body)
+
+                listings.shouldNotBeEmpty()
+                listings.forAll { it.categorySlug shouldBe sampleCategory.slug }
+            }
+
+            @Test
+            fun `should return 404 not found when retrieving listings from inactive category`() {
+                sampleCategory.isActive = false
+
+                mockRequest(
+                    requestType = GET,
+                    path = "$BASE_PATH/category/${sampleCategory.slug}",
+                    token = null,
+                ).andExpect(status().isNotFound)
+            }
         }
     }
 

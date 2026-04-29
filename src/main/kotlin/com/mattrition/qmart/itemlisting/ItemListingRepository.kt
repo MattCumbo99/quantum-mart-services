@@ -6,5 +6,5 @@ import java.util.UUID
 interface ItemListingRepository : JpaRepository<ItemListing, UUID> {
     fun findItemListingsBySellerId(id: UUID): List<ItemListing>
 
-    fun deleteItemListingById(id: UUID)
+    fun findByCategoryId(categoryId: UUID): List<ItemListing>
 }
