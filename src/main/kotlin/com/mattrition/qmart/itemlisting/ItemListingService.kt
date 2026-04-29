@@ -62,6 +62,27 @@ class ItemListingService(
         }
     }
 
+    /** Gets every listing associated with a category slug. The category must be active. */
+    fun getListingsByCategorySlug(slug: String): List<ItemListingDto> {
+        val lowerSlug = slug.lowercase()
+        val category = categoryRepository.findCategoryBySlug(lowerSlug)
+
+        if (category == null || !category.isActive) {
+            throw NotFoundException("Category with Slug $lowerSlug not found.")
+        }
+
+        val listings =
+            itemListingRepo.findByCategoryId(category.id!!).ifEmpty {
+                return emptyList()
+            }
+
+        return listings.map { listing ->
+            val seller = userRepo.findById(listing.sellerId).get()
+
+            ItemListingMapper.toDto(listing, seller.username, category)
+        }
+    }
+
     @Transactional
     fun updateListing(
         id: UUID,

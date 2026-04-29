@@ -1,8 +1,11 @@
 package com.mattrition.qmart.itemlisting
 
 import com.mattrition.qmart.BaseH2Test
+import com.mattrition.qmart.category.Category
 import com.mattrition.qmart.itemlisting.dto.ItemListingDto
 import com.mattrition.qmart.itemlisting.dto.UpdateListingRequest
+import io.kotest.inspectors.forAll
+import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -14,6 +17,7 @@ import org.springframework.http.HttpMethod.PATCH
 import org.springframework.http.HttpMethod.POST
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.module.kotlin.readValue
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.jvm.optionals.getOrNull
@@ -122,6 +126,63 @@ class ItemListingControllerTest : BaseH2Test() {
         fun `should return 404 not found on unknown listing id`() {
             mockRequest(requestType = GET, path = "$BASE_PATH/${UUID.randomUUID()}", token = null)
                 .andExpect(status().isNotFound)
+        }
+
+        @Nested
+        inner class GetByCategory {
+            private lateinit var sampleCategory: Category
+            private lateinit var otherCategory: Category
+
+            private lateinit var otherListing: ItemListing
+
+            @BeforeEach
+            fun initCategoryListings() {
+                sampleCategory = categoryRepository.findCategoryBySlug("sample-category")!!
+                otherCategory =
+                    categoryRepository.save(
+                        Category(name = "Test Category", slug = "test-category"),
+                    )
+
+                otherListing =
+                    itemListingRepository.save(
+                        ItemListing(
+                            sellerId = TestUsers.admin.id!!,
+                            title = "New Listing",
+                            description = "New listing.",
+                            price = BigDecimal.valueOf(5000),
+                            imageUrl = null,
+                            categoryId = otherCategory.id!!,
+                        ),
+                    )
+            }
+
+            @Test
+            fun `should get listings by category`() {
+                val result =
+                    mockRequest(
+                        requestType = GET,
+                        path = "$BASE_PATH/category/${sampleCategory.slug}",
+                        token = null,
+                    ).andExpect(status().isOk)
+                        .andReturn()
+
+                val body = result.response.contentAsString
+                val listings = objectMapper.readValue<List<ItemListingDto>>(body)
+
+                listings.shouldNotBeEmpty()
+                listings.forAll { it.categorySlug shouldBe sampleCategory.slug }
+            }
+
+            @Test
+            fun `should return 404 not found when retrieving listings from inactive category`() {
+                sampleCategory.isActive = false
+
+                mockRequest(
+                    requestType = GET,
+                    path = "$BASE_PATH/category/${sampleCategory.slug}",
+                    token = null,
+                ).andExpect(status().isNotFound)
+            }
         }
     }
 
