@@ -23,7 +23,7 @@ class CategoryService(
     }
 
     /** Gets every category. */
-    fun getAllCategories(): List<CategoryDto> = categoryRepository.findAll().map { CategoryMapper.toDto(it) }
+    fun getAllCategories(): List<CategoryDto> = categoryRepository.findAllCategories().map { CategoryMapper.toDto(it) }
 
     /** Gets only categories marked as active. */
     fun getAllActiveCategories(): List<CategoryDto> = categoryRepository.findAllActive().map { CategoryMapper.toDto(it) }
