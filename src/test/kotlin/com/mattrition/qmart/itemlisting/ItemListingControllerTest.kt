@@ -8,7 +8,6 @@ import io.kotest.inspectors.forAll
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -190,17 +189,16 @@ class ItemListingControllerTest : BaseH2Test() {
     inner class UpdateItemListing {
         @Test
         fun `should update item listing`() {
+            val otherCategory =
+                categoryRepository.save(Category(name = "New Category", slug = "new-category"))
+
             val req =
                 UpdateListingRequest(
                     title = "new title",
                     description = "new description",
                     price = BigDecimal.valueOf(5000),
+                    categorySlug = otherCategory.slug,
                 )
-
-            // Pre-assertion
-            listing1.title shouldNotBe req.title
-            listing1.description shouldNotBe req.description
-            listing1.price shouldNotBe req.price
 
             mockRequest(
                 requestType = PATCH,
@@ -214,6 +212,7 @@ class ItemListingControllerTest : BaseH2Test() {
             listing.title shouldBe req.title
             listing.description shouldBe req.description
             listing.price shouldBe req.price
+            listing.categoryId shouldBe otherCategory.id!!
         }
 
         @Test

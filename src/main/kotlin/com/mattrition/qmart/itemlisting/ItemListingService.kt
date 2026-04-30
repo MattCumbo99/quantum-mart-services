@@ -108,10 +108,16 @@ class ItemListingService(
         }
         req.imageUrl?.let { listing.imageUrl = it }
         req.isActive?.let { listing.isActive = it }
+        req.categorySlug?.let { slug ->
+            val category = categoryRepository.findCategoryBySlug(slug)
+            if (category == null || !category.isActive) {
+                throw NotFoundException("Category with Slug $slug not found.")
+            }
+
+            listing.categoryId = category.id!!
+        }
 
         listing.updatedAt = OffsetDateTime.now()
-
-        itemListingRepo.save(listing)
     }
 
     private fun authOwnsListing(listing: ItemListing) = listing.sellerId == authPrincipal()!!.id

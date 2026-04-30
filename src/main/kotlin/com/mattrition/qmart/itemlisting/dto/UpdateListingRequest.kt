@@ -9,4 +9,5 @@ data class UpdateListingRequest(
     val price: BigDecimal? = null,
     val imageUrl: String? = null,
     val isActive: Boolean? = null,
+    val categorySlug: String? = null,
 )
