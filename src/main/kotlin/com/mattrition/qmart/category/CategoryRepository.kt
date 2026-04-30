@@ -13,5 +13,13 @@ interface CategoryRepository : JpaRepository<Category, UUID> {
     )
     fun findAllActive(): List<Category>
 
+    @Query(
+        """
+            SELECT c FROM Category c
+            WHERE c.slug != 'uncategorized'
+        """,
+    )
+    fun findAllCategories(): List<Category>
+
     fun findCategoryBySlug(slug: String): Category?
 }
